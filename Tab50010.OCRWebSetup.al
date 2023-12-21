@@ -18,6 +18,16 @@ table 50010 OCRWebSetup
         {
             Caption = 'No.';
         }
+        field(2; "Security Key"; Text[50])
+        {
+            Caption = 'Security Key';
+            DataClassification = ToBeClassified;
+        }
+        field(3; "Invoke URL"; Text[250])
+        {
+            Caption = 'Invoke URL';
+            DataClassification = ToBeClassified;
+        }
     }
     keys
     {

@@ -24,7 +24,16 @@ page 50010 OCRWebSetup
                 field("No."; Rec."No.")
                 {
                     ApplicationArea = All;
+                    Enabled = false;
                     ToolTip = 'Specifies the value of the No. field.';
+                }
+                field("Security Key"; Rec."Security Key")
+                {
+                    ApplicationArea = All;
+                }
+                field("Invoke URL"; Rec."Invoke URL")
+                {
+                    ApplicationArea = All;
                 }
             }
         }
