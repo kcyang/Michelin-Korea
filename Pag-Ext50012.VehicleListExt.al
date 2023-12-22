@@ -23,6 +23,14 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
     {
         addfirst(Catalog)
         {
+            action(test)
+            {
+                ApplicationArea = All;
+                trigger OnAction()
+                begin
+                    Message('TIMESTAMP[%1]', DateTimeToUnixTimestamp(System.CurrentDateTime));
+                end;
+            }
             action("OCR Search")
             {
                 ApplicationArea = All;
@@ -33,9 +41,15 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
                 PromotedIsBig = true;
 
                 trigger OnAction()
+                var
+                    IsSuccess: Boolean;
                 begin
                     Message('차량등록증 업로드/실행');
-                    Camera.AddPicture(Rec, Rec.FieldNo("Vehicle Registration Card"));
+                    IsSuccess := Camera.AddPicture(Rec, Rec.FieldNo("Vehicle Registration Card"));
+                    if IsSuccess then begin
+                        VehicleG.Copy(Rec);
+                        SendOCR.Send_OCR(VehicleG);
+                    end;
                 end;
             }
             action("Veh.Reg.Card Import")
@@ -69,6 +83,12 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
                         Rec.Insert(true);
 
                     if FileManagement.DeleteServerFile(FileName) then;
+
+                    //Send the image file.
+                    if Rec."Vehicle Registration Card".HasValue then begin
+                        VehicleG.Copy(Rec);
+                        SendOCR.Send_OCR(VehicleG);
+                    end;
                 end;
             }
             action(ExportFile)
@@ -134,9 +154,20 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
         DeleteImageQst: Label 'Are you sure you want to delete the picture?';
         SelectPictureTxt: Label 'Select a picture to upload';
         DeleteExportEnabled: Boolean;
+        VehicleG: Record Vehicle temporary;
+        SendOCR: Codeunit "Ext Integration";
 
     local procedure SetEditableOnPictureActions()
     begin
         DeleteExportEnabled := Rec."Vehicle Registration Card".HasValue;
+    end;
+
+    local procedure DateTimeToUnixTimestamp(DateTimeValue: DateTime): BigInteger
+    var
+        EpochDateTime: DateTime;
+    begin
+        // Calculate the Unix timestamp based on the Epoch datetime of 1/1/1970
+        EpochDateTime := CreateDateTime(DMY2Date(1, 1, 1970), 0T);
+        exit((DateTimeValue - EpochDateTime));
     end;
 }

@@ -39,8 +39,15 @@ codeunit 50010 "Ext Integration"
             TempBlob.CreateInStream(GVOS_InputStream);
             base64string := base64Convert.ToBase64(GVOS_InputStream);
 
-            jsonBody := ' {"base64":"' + base64string + '","fileName":"' + regcardname + '","fileType":"text/xml", "fileExt":"TXT"}';
-
+            jsonBody := '{"version" : "v2"'
+                        + ',"requestId" : "' + vehicleG."Vehicle Registration Card".MediaId()
+                        + '","timestamp" : ' + FORMAT(DateTimeToUnixTimestamp(System.CurrentDateTime))
+                        + ',"images" : [{'
+                        + '"format":"png"'
+                        + ',"name":"' + vehicleG."Vehicle No."
+                        + '","data":"' + base64string
+                        + '"}]}';
+            //Message('JSON --> %1', jsonBody);
             httpContent.WriteFrom(jsonBody);
             httpContent.GetHeaders(httpHeader);
             httpHeader.Remove('Content-Type');
@@ -56,5 +63,14 @@ codeunit 50010 "Ext Integration"
                 Error('Error :: %1', respText);
             end;
         end;
+    end;
+
+    local procedure DateTimeToUnixTimestamp(DateTimeValue: DateTime): BigInteger
+    var
+        EpochDateTime: DateTime;
+    begin
+        // Calculate the Unix timestamp based on the Epoch datetime of 1/1/1970
+        EpochDateTime := CreateDateTime(DMY2Date(1, 1, 1970), 0T);
+        exit((DateTimeValue - EpochDateTime));
     end;
 }

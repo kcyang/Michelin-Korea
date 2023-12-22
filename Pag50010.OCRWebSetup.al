@@ -19,14 +19,7 @@ page 50010 OCRWebSetup
         {
             group(General)
             {
-                Caption = 'General';
-
-                field("No."; Rec."No.")
-                {
-                    ApplicationArea = All;
-                    Enabled = false;
-                    ToolTip = 'Specifies the value of the No. field.';
-                }
+                Caption = 'OCR Naver API';
                 field("Security Key"; Rec."Security Key")
                 {
                     ApplicationArea = All;
@@ -35,6 +28,11 @@ page 50010 OCRWebSetup
                 {
                     ApplicationArea = All;
                 }
+            }
+            group(PartZone)
+            {
+                Caption = 'PartZone API';
+
             }
         }
     }
