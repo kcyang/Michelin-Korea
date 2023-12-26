@@ -13,6 +13,24 @@ codeunit 50010 "Ext Integration"
         httpHeader: HttpHeaders;
         respText: Text;
 
+
+    procedure Get_OCR_Text(jsonText: Text)
+    var
+        jsonObj: JsonObject;
+        jsonToken: JsonToken;
+    begin
+        if jsonText = '' then
+            Error('There is no text parameter');
+
+        if not jsonObj.ReadFrom(jsonText) then
+            Error('JSON Parsing Error');
+
+        if jsonObj.Get('inferText', jsonToken) then begin
+
+        end;
+
+    end;
+
     procedure Send_OCR(var vehicleG: Record Vehicle temporary)
     var
         base64string: Text;
