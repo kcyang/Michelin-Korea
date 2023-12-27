@@ -28,7 +28,8 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
                 ApplicationArea = All;
                 trigger OnAction()
                 begin
-                    Message('TIMESTAMP[%1]', DateTimeToUnixTimestamp(System.CurrentDateTime));
+                    VehicleG.Copy(Rec);
+                    SendOCR.Send_PZ(VehicleG);
                 end;
             }
             action("OCR Search")

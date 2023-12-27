@@ -28,6 +28,16 @@ table 50010 OCRWebSetup
             Caption = 'Invoke URL';
             DataClassification = ToBeClassified;
         }
+        field(4; "PZ_Invoke URL"; Text[250])
+        {
+            Caption = 'PartZone Invoke URL';
+            DataClassification = ToBeClassified;
+        }
+        field(5; "PZ_Key Code"; Text[250])
+        {
+            Caption = 'PartZone Key Code';
+            DataClassification = ToBeClassified;
+        }
     }
     keys
     {

@@ -31,6 +31,23 @@ codeunit 50010 "Ext Integration"
 
     end;
 
+    procedure Get_PZ_Text(jsonText: Text)
+    var
+        jsonObj: JsonObject;
+        jsonToken: JsonToken;
+    begin
+        if jsonText = '' then
+            Error('There is no text parameter');
+
+        if not jsonObj.ReadFrom(jsonText) then
+            Error('JSON Parsing Error');
+
+        if jsonObj.Get('inferText', jsonToken) then begin
+
+        end;
+
+    end;
+
     procedure Send_OCR(var vehicleG: Record Vehicle temporary)
     var
         base64string: Text;
@@ -76,12 +93,50 @@ codeunit 50010 "Ext Integration"
             httpResponse.Content().ReadAs(respText);
 
             if httpResponse.HttpStatusCode = 200 then begin
-                Message('The file sent.!');
+
+                Get_OCR_Text(respText);
             end else begin
                 Error('Error :: %1', respText);
             end;
         end;
     end;
+
+
+    procedure Send_PZ(var vehicleG: Record Vehicle temporary)
+    var
+        base64string: Text;
+        regcardname: Text;
+        ocrsetup: Record OCRWebSetup;
+    begin
+        Clear(base64string);
+        Clear(regcardname);
+
+        if ocrsetup.Get() then begin
+            if ocrsetup."PZ_Key Code" = '' then
+                Error('PartZone Key Code is empty.');
+            if ocrsetup."PZ_Invoke URL" = '' then
+                Error('PartZone Invoke URL is empty.');
+        end;
+
+        jsonBody := '{"keycode" : "' + ocrsetup."PZ_Key Code" + '","vin" : "' + vehicleG."Vehicle Identification No." + '","type":"1"}';
+
+        httpContent.WriteFrom(jsonBody);
+        httpContent.GetHeaders(httpHeader);
+        httpHeader.Remove('Content-Type');
+        httpHeader.Add('Content-Type', 'application/json');
+
+        httpClient.Post(ocrsetup."PZ_Invoke URL", httpContent, httpResponse);
+        httpResponse.Content().ReadAs(respText);
+
+        if httpResponse.HttpStatusCode = 200 then begin
+            Message('[%1]', respText);
+            Get_PZ_Text(respText);
+        end else begin
+            Error('Error :: %1', respText);
+        end;
+
+    end;
+
 
     local procedure DateTimeToUnixTimestamp(DateTimeValue: DateTime): BigInteger
     var

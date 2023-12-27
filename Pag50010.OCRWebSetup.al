@@ -32,7 +32,14 @@ page 50010 OCRWebSetup
             group(PartZone)
             {
                 Caption = 'PartZone API';
-
+                field("Partzone Invoke URL"; rec."PZ_Invoke URL")
+                {
+                    ApplicationArea = All;
+                }
+                field("Partzone Key Code"; rec."PZ_Key Code")
+                {
+                    ApplicationArea = All;
+                }
             }
         }
     }
