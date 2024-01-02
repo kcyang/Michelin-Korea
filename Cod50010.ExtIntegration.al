@@ -18,15 +18,62 @@ codeunit 50010 "Ext Integration"
     var
         jsonObj: JsonObject;
         jsonToken: JsonToken;
+        jsonToken_ImagesL: JsonToken;
+        jsonToken_FieldsL: JsonToken;
+        jsonToken_eachField: JsonToken;
+        jsonToken_inferText: JsonToken;
+        jsonArray_FieldsL: JsonArray;
+        jsonArrayL: JsonArray;
+        indexVIN: Integer;
+
+        listFields: List of [Text];
+        VINNoTextL: Text;
     begin
+
         if jsonText = '' then
             Error('There is no text parameter');
 
         if not jsonObj.ReadFrom(jsonText) then
             Error('JSON Parsing Error');
 
-        if jsonObj.Get('inferText', jsonToken) then begin
+        if jsonObj.Get('images', jsonToken) then begin
+            //image array 토큰을 받아서,
+            if jsonToken.IsArray then begin
+                jsonArrayL := jsonToken.AsArray();
+                //그 array 에서, 0번째 가져온 다음에,
+                if jsonArrayL.Get(0, jsonToken_ImagesL) then begin
+                    if jsonToken_ImagesL.IsObject then begin
+                        jsonToken_ImagesL.AsObject().Get('fields', jsonToken_FieldsL);
+                        if jsonToken_FieldsL.IsArray then begin
+                            jsonArray_FieldsL := jsonToken_FieldsL.AsArray();
+                            foreach jsonToken_eachField in jsonArray_FieldsL do begin
+                                if jsonToken_eachField.IsObject then begin
+                                    jsonToken_eachField.AsObject().Get('inferText', jsonToken_inferText);
+                                    if jsonToken_inferText.IsValue then
+                                        listFields.Add(jsonToken_inferText.AsValue().AsText());
+                                end;
+                            end;
+                            //최초등록일 다음 5개
 
+                            //1자동차등록번호 다음 1개
+
+                            //6차대번호 다음 1개
+                            indexVIN := listFields.IndexOf('차대번호');
+                            if indexVIN = 0 then begin
+                                indexVIN := listFields.IndexOf('6차대번호')
+                            end;
+                            if indexVIN <> 0 then
+                                listFields.Get(indexVIN + 1, VINNoTextL);
+                            //5형식및모델연도 다음 1개(형식) 그 다음(모델연도) 1개
+
+                        end;
+                    end;
+                end;
+                //가져온 놈에서 fields 를 가져와서,
+                //거기에서 inferText 만 Array 로 담아서,
+                //특정 단어 다음의 값을 가져올 것.
+
+            end;
         end;
 
     end;
@@ -53,6 +100,11 @@ codeunit 50010 "Ext Integration"
         base64string: Text;
         regcardname: Text;
         ocrsetup: Record OCRWebSetup;
+        ocrlog: Record OCRLog;
+        ocrlogdatetime: DateTime;
+        sendText: BigText;
+        recvText: BigText;
+        OStream: OutStream;
     begin
         Clear(base64string);
         Clear(regcardname);
@@ -83,6 +135,18 @@ codeunit 50010 "Ext Integration"
                         + '","data":"' + base64string
                         + '"}]}';
             //Message('JSON --> %1', jsonBody);
+            sendText.AddText(jsonBody);
+
+            ocrlog.Init();
+            ocrlogdatetime := CurrentDateTime;
+            ocrlog."Vehicle No." := vehicleG."Vehicle No.";
+            ocrlog.SendDateTime := ocrlogdatetime;
+            ocrlog.Insert();
+
+            ocrlog.SendText.CreateOutStream(OStream);
+            sendText.Write(OStream);
+            ocrlog.Modify();
+
             httpContent.WriteFrom(jsonBody);
             httpContent.GetHeaders(httpHeader);
             httpHeader.Remove('Content-Type');
@@ -92,12 +156,21 @@ codeunit 50010 "Ext Integration"
             httpClient.Post(ocrsetup."Invoke URL", httpContent, httpResponse);
             httpResponse.Content().ReadAs(respText);
 
-            if httpResponse.HttpStatusCode = 200 then begin
+            recvText.AddText(respText);
 
+            if httpResponse.HttpStatusCode = 200 then begin
                 Get_OCR_Text(respText);
+                ocrlog.Status := 'Success';
             end else begin
+                ocrlog.Status := 'Error';
                 Error('Error :: %1', respText);
             end;
+
+            Clear(OStream);
+            ocrlog.RecvText.CreateOutStream(OStream);
+            recvText.Write(OStream);
+            ocrlog.Modify();
+
         end;
     end;
 
@@ -129,7 +202,7 @@ codeunit 50010 "Ext Integration"
         httpResponse.Content().ReadAs(respText);
 
         if httpResponse.HttpStatusCode = 200 then begin
-            Message('[%1]', respText);
+            //Message('[%1]', respText);
             Get_PZ_Text(respText);
         end else begin
             Error('Error :: %1', respText);

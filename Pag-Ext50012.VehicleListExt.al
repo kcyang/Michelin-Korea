@@ -23,6 +23,12 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
     {
         addfirst(Catalog)
         {
+            action(runLog)
+            {
+                ApplicationArea = All;
+                Image = LineDescription;
+                RunObject = page "OCR Log List";
+            }
             action(test)
             {
                 ApplicationArea = All;
