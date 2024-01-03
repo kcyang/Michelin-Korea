@@ -24,10 +24,14 @@ codeunit 50010 "Ext Integration"
         jsonToken_inferText: JsonToken;
         jsonArray_FieldsL: JsonArray;
         jsonArrayL: JsonArray;
-        indexVIN: Integer;
+        indexofText: Integer;
 
         listFields: List of [Text];
         VINNoTextL: Text;
+        VehicleLicenseNoL: Text;
+        ModelYearL: Text;
+        SpecL: Text;
+
     begin
 
         if jsonText = '' then
@@ -50,22 +54,42 @@ codeunit 50010 "Ext Integration"
                                 if jsonToken_eachField.IsObject then begin
                                     jsonToken_eachField.AsObject().Get('inferText', jsonToken_inferText);
                                     if jsonToken_inferText.IsValue then
-                                        listFields.Add(jsonToken_inferText.AsValue().AsText());
+                                        listFields.Add(DelChr(jsonToken_inferText.AsValue().AsText(), '='));
                                 end;
                             end;
+                            indexofText := 0;
                             //최초등록일 다음 5개
 
+                            indexofText := 0;
                             //1자동차등록번호 다음 1개
-
-                            //6차대번호 다음 1개
-                            indexVIN := listFields.IndexOf('차대번호');
-                            if indexVIN = 0 then begin
-                                indexVIN := listFields.IndexOf('6차대번호')
+                            indexofText := listFields.IndexOf('자동차등록번호');
+                            if indexofText = 0 then begin
+                                indexofText := listFields.IndexOf('1자동차등록번호')
                             end;
-                            if indexVIN <> 0 then
-                                listFields.Get(indexVIN + 1, VINNoTextL);
-                            //5형식및모델연도 다음 1개(형식) 그 다음(모델연도) 1개
+                            if indexofText <> 0 then
+                                listFields.Get(indexofText + 1, VehicleLicenseNoL);
 
+                            indexofText := 0;
+                            //6차대번호 다음 1개
+                            indexofText := listFields.IndexOf('차대번호');
+                            if indexofText = 0 then begin
+                                indexofText := listFields.IndexOf('6차대번호')
+                            end;
+                            if indexofText <> 0 then
+                                listFields.Get(indexofText + 1, VINNoTextL);
+
+                            //5형식및모델연도 다음 1개(형식) 그 다음(모델연도) 1개
+                            indexofText := 0;
+                            indexofText := listFields.IndexOf('형식및모델연도');
+                            if indexofText = 0 then begin
+                                indexofText := listFields.IndexOf('5형식및모델연도')
+                            end;
+                            if indexofText <> 0 then begin
+                                listFields.Get(indexofText + 1, SpecL);
+                                listFields.Get(indexofText + 2, ModelYearL);
+                            end;
+
+                            Message('VIN==>[%1]\n차량번호==>[%2]\n형식==>[%3]\n모델연도==>[%4]', VINNoTextL, VehicleLicenseNoL, SpecL, ModelYearL);
                         end;
                     end;
                 end;
@@ -105,6 +129,7 @@ codeunit 50010 "Ext Integration"
         sendText: BigText;
         recvText: BigText;
         OStream: OutStream;
+        ROStream: OutStream;
     begin
         Clear(base64string);
         Clear(regcardname);
@@ -163,12 +188,11 @@ codeunit 50010 "Ext Integration"
                 ocrlog.Status := 'Success';
             end else begin
                 ocrlog.Status := 'Error';
-                Error('Error :: %1', respText);
+                Message('Error :: %1', respText);
             end;
 
-            Clear(OStream);
-            ocrlog.RecvText.CreateOutStream(OStream);
-            recvText.Write(OStream);
+            ocrlog.RecvText.CreateOutStream(ROStream);
+            recvText.Write(ROStream);
             ocrlog.Modify();
 
         end;
