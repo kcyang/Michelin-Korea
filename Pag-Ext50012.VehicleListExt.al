@@ -105,6 +105,9 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
                 Enabled = DeleteExportEnabled;
                 Image = Export;
                 ToolTip = 'Export the picture to a file.';
+                Promoted = true;
+                PromotedCategory = Category6;
+                PromotedIsBig = true;
 
                 trigger OnAction()
                 var
@@ -129,6 +132,9 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
                 Enabled = DeleteExportEnabled;
                 Image = Delete;
                 ToolTip = 'Delete the Veh.Reg.Card.';
+                Promoted = true;
+                PromotedCategory = Category6;
+                PromotedIsBig = true;
 
                 trigger OnAction()
                 begin

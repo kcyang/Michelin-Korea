@@ -12,6 +12,7 @@ codeunit 50010 "Ext Integration"
         httpRequest: HttpRequestMessage;
         httpHeader: HttpHeaders;
         respText: Text;
+        VehicleTemp: Record Vehicle temporary;
 
 
     procedure Get_OCR_Text(jsonText: Text)
@@ -31,7 +32,17 @@ codeunit 50010 "Ext Integration"
         VehicleLicenseNoL: Text;
         ModelYearL: Text;
         SpecL: Text;
+        RegistDate: Text;
+        tempRegist: Text;
+        I: Integer;
+        YearIdx: Integer;
+        MontIdx: Integer;
+        DayIdx: Integer;
+        RegistDateDT: Date;
+        RegistDateList: List of [Text];
+        RegistListCnt: Integer;
 
+        VehicleConfirmPage: Page "OCR Vehicle InformationConfirm";
     begin
 
         if jsonText = '' then
@@ -59,6 +70,34 @@ codeunit 50010 "Ext Integration"
                             end;
                             indexofText := 0;
                             //최초등록일 다음 5개
+                            indexofText := listFields.IndexOf('최초등록일:');
+                            if indexofText <> 0 then begin
+                                //최소한 5개의 토큰을 확인하고
+                                for I := 1 to 5 do begin
+                                    listFields.Get(indexofText + I, tempRegist);
+                                    RegistDate += tempRegist;
+                                    //'일' 이라는 텍스트를 만나면 그만함.
+                                    if tempRegist.Contains('일') then
+                                        break;
+                                end;
+                                //불필요한 공백은 삭제처리.
+                                RegistDate := DelChr(RegistDate, '=');
+                                //년/월/일을 기준으로 숫자만 꺼내서,
+                                RegistDateList := RegistDate.Split('년', '월', '일');
+                                RegistListCnt := RegistDateList.Count;
+                                //최소한 3개의 숫자를 확인하고 없다면 빈값을 넣어줌.
+                                if RegistListCnt < 3 then begin
+                                    for I := RegistListCnt to 3 do begin
+                                        RegistDateList.Add('1');
+                                    end;
+                                end;
+                                Evaluate(YearIdx, RegistDateList.Get(1));
+                                Evaluate(MontIdx, RegistDateList.Get(2));
+                                Evaluate(DayIdx, RegistDateList.Get(3));
+                                //숫자로 변환한 내용을, 일자로 변환해줌.
+                                RegistDateDT := DMY2Date(DayIdx, MontIdx, YearIdx);
+
+                            end;
 
                             indexofText := 0;
                             //1자동차등록번호 다음 1개
@@ -89,14 +128,22 @@ codeunit 50010 "Ext Integration"
                                 listFields.Get(indexofText + 2, ModelYearL);
                             end;
 
-                            Message('VIN==>[%1]\n차량번호==>[%2]\n형식==>[%3]\n모델연도==>[%4]', VINNoTextL, VehicleLicenseNoL, SpecL, ModelYearL);
+                            VehicleTemp.Init();
+                            VehicleTemp."Vehicle No." := VehicleLicenseNoL;
+                            VehicleTemp."Vehicle Identification No." := VINNoTextL;
+                            VehicleTemp."Licence-Plate No." := VehicleLicenseNoL;
+                            VehicleTemp."National Code" := SpecL;
+                            VehicleTemp.Year := ModelYearL;
+                            VehicleTemp."Registration Date" := RegistDateDT;
+                            VehicleTemp.Insert(true);
+
+                            Page.Run(50012, VehicleTemp);
+
+                            //Message('최초등록일==>[%5]\nVIN==>[%1]\n차량번호==>[%2]\n형식==>[%3]\n모델연도==>[%4]', VINNoTextL, VehicleLicenseNoL, SpecL, ModelYearL, RegistDateDT);
+
                         end;
                     end;
                 end;
-                //가져온 놈에서 fields 를 가져와서,
-                //거기에서 inferText 만 Array 로 담아서,
-                //특정 단어 다음의 값을 가져올 것.
-
             end;
         end;
 
@@ -131,8 +178,7 @@ codeunit 50010 "Ext Integration"
         OStream: OutStream;
         ROStream: OutStream;
     begin
-        Clear(base64string);
-        Clear(regcardname);
+        ClearAll();
 
         if ocrsetup.Get() then begin
             if ocrsetup."Security Key" = '' then
@@ -205,8 +251,7 @@ codeunit 50010 "Ext Integration"
         regcardname: Text;
         ocrsetup: Record OCRWebSetup;
     begin
-        Clear(base64string);
-        Clear(regcardname);
+        ClearAll();
 
         if ocrsetup.Get() then begin
             if ocrsetup."PZ_Key Code" = '' then
