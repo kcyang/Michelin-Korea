@@ -12,5 +12,15 @@ pageextension 50001 "Michelin Korea RC" extends "BSS Front Office RC"
                 Image = PrintReport;
             }
         }
+        addlast("New Sales Documents")
+        {
+            action(Appointment)
+            {
+                ApplicationArea = all;
+                CaptionML = ENU = 'Appointment List', KOR = '예약 목록';
+                RunObject = page "Appointment List";
+                Image = PrintReport;
+            }
+        }
     }
 }
