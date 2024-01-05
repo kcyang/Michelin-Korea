@@ -561,6 +561,10 @@ report 50000 "Daily Sales Register-MK"
                 column(Sales_Cr_Memo_Line_ID2; 'DI')
                 {
                 }
+                column(Sales_Cr_Memo_No; "No.")
+                {
+
+                }
                 column(Sales_Cr_Memo_Line_Description; Description)
                 {
                 }
@@ -928,6 +932,10 @@ report 50000 "Daily Sales Register-MK"
                 }
                 column(Sales_Cr_Memo_Line1_ID2; 'DI')
                 {
+                }
+                column(Sales_Cr_Memo_LineNo2; "No.")
+                {
+
                 }
                 column(Sales_Cr_Memo_Line1_Description; Description)
                 {
