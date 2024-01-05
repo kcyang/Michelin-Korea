@@ -46,4 +46,27 @@ page 50012 "OCR Vehicle InformationConfirm"
             }
         }
     }
+
+    actions
+    {
+        area(Processing)
+        {
+            action(SendPZ)
+            {
+                ApplicationArea = All;
+                CaptionML = ENU = 'PartZone Search', KOR = '파트존 검색';
+                Promoted = true;
+                PromotedCategory = Process;
+                PromotedIsBig = true;
+                Image = ServicePriceAdjustment;
+
+                trigger OnAction()
+                var
+                    extint: Codeunit "Ext Integration";
+                begin
+                    extint.Send_PZ(Rec);
+                end;
+            }
+        }
+    }
 }

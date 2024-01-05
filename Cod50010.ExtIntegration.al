@@ -138,7 +138,8 @@ codeunit 50010 "Ext Integration"
                             VehicleTemp.Insert(true);
 
                             Page.Run(50012, VehicleTemp);
-
+                            // TODO 확인페이지에서 입력한 내용을 Vehicle 에 적용하기.
+                            // TODO 그 다음에, Part Zone 에 보내기. 
                             //Message('최초등록일==>[%5]\nVIN==>[%1]\n차량번호==>[%2]\n형식==>[%3]\n모델연도==>[%4]', VINNoTextL, VehicleLicenseNoL, SpecL, ModelYearL, RegistDateDT);
 
                         end;
@@ -160,9 +161,6 @@ codeunit 50010 "Ext Integration"
         if not jsonObj.ReadFrom(jsonText) then
             Error('JSON Parsing Error');
 
-        if jsonObj.Get('inferText', jsonToken) then begin
-
-        end;
 
     end;
 
@@ -250,6 +248,12 @@ codeunit 50010 "Ext Integration"
         base64string: Text;
         regcardname: Text;
         ocrsetup: Record OCRWebSetup;
+        ocrlog: Record OCRLog;
+        ocrlogdatetime: DateTime;
+        sendText: BigText;
+        recvText: BigText;
+        OStream: OutStream;
+        ROStream: OutStream;
     begin
         ClearAll();
 
@@ -262,6 +266,18 @@ codeunit 50010 "Ext Integration"
 
         jsonBody := '{"keycode" : "' + ocrsetup."PZ_Key Code" + '","vin" : "' + vehicleG."Vehicle Identification No." + '","type":"1"}';
 
+        sendText.AddText(jsonBody);
+
+        ocrlog.Init();
+        ocrlogdatetime := CurrentDateTime;
+        ocrlog."Vehicle No." := vehicleG."Vehicle No.";
+        ocrlog.SendDateTime := ocrlogdatetime;
+        ocrlog.Insert();
+
+        ocrlog.SendText.CreateOutStream(OStream);
+        sendText.Write(OStream);
+        ocrlog.Modify();
+
         httpContent.WriteFrom(jsonBody);
         httpContent.GetHeaders(httpHeader);
         httpHeader.Remove('Content-Type');
@@ -271,12 +287,16 @@ codeunit 50010 "Ext Integration"
         httpResponse.Content().ReadAs(respText);
 
         if httpResponse.HttpStatusCode = 200 then begin
-            //Message('[%1]', respText);
             Get_PZ_Text(respText);
+            ocrlog.Status := 'Success';
         end else begin
-            Error('Error :: %1', respText);
+            ocrlog.Status := 'Error';
+            Message('Error :: %1', respText);
         end;
 
+        ocrlog.RecvText.CreateOutStream(ROStream);
+        recvText.Write(ROStream);
+        ocrlog.Modify();
     end;
 
 
