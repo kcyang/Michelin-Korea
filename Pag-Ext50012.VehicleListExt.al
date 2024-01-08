@@ -28,6 +28,9 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
                 ApplicationArea = All;
                 Image = LineDescription;
                 RunObject = page "OCR Log List";
+                Promoted = true;
+                PromotedCategory = Category6;
+                PromotedIsBig = true;
             }
             action(test)
             {

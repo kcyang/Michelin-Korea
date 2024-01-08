@@ -154,6 +154,10 @@ codeunit 50010 "Ext Integration"
     var
         jsonObj: JsonObject;
         jsonToken: JsonToken;
+        jsonTokenSpecL: JsonToken;
+        jsonToken_ModelL: JsonToken;
+        jsonObj_pz_v1_ObjectL: JsonObject;
+
     begin
         if jsonText = '' then
             Error('There is no text parameter');
@@ -161,7 +165,35 @@ codeunit 50010 "Ext Integration"
         if not jsonObj.ReadFrom(jsonText) then
             Error('JSON Parsing Error');
 
-
+        if jsonObj.Get('data', jsonToken) then begin
+            if jsonToken.IsObject then begin
+                jsonToken.AsObject().Get('spec', jsonTokenSpecL);
+                if jsonTokenSpecL.IsObject then begin
+                    jsonObj_pz_v1_ObjectL := jsonTokenSpecL.AsObject();
+                    /*
+                                    "maker": "BMW", - Vehicle Manufacturer
+                                    "model": "320d", - Vehicle Model
+                                    "series": "F30", - Vehicle Variant
+                                    "yearDate": "2014", - Year
+                                    "chassis": "SEDAN", - Body Type
+                                    "engine": "N47D20C", - Engine No.
+                                    "fuelType": "diesel", - Fuel
+                                    "transMission": "", - Transmission
+                                    "pureEngineOil" 엔진오일량: "5.20000",
+                                    "viscosity" 엔진오일 점도: "5W30",
+                                    "standardSpec" 엔진오일 규격: "LL-04",
+                                    "missionOil" 미션오일량: "8.0",
+                                    "wiperCode1" 와이퍼사이즈-왼쪽: "L600T060",
+                                    "wiperCode2" 와이퍼사이즈-오른쪽: "L475B060",
+                                    "antiFreezeSpec" 부동액 규격: "G11",
+                                    "batteryType" 배터리 타입: "AGM",
+                                    "capacity" 배터리 용량: "95",
+                                    "chargingTerminal": "L"
+                    */
+                end;
+            end;
+        end;
+        //TODO Confirm 화면 Refresh.
     end;
 
     procedure Send_OCR(var vehicleG: Record Vehicle temporary)
