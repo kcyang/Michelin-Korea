@@ -9,7 +9,7 @@ codeunit 50010 "Ext Integration"
         httpClient: HttpClient;
         httpContent: HttpContent;
         httpResponse: HttpResponseMessage;
-        httpRequest: HttpRequestMessage;
+        // httpRequest: HttpRequestMessage;
         httpHeader: HttpHeaders;
         respText: Text;
         VehicleTemp: Record Vehicle temporary;
@@ -154,9 +154,21 @@ codeunit 50010 "Ext Integration"
     var
         jsonObj: JsonObject;
         jsonToken: JsonToken;
+        Token_resultCodeL: JsonToken;
         jsonTokenSpecL: JsonToken;
         jsonToken_ModelL: JsonToken;
         jsonObj_pz_v1_ObjectL: JsonObject;
+        specTokenL: JsonToken;
+
+        specListL: List of [Text];
+        specDictL: Dictionary of [Text, Text];
+        specValuesL: List of [Text];
+        specKeyL: Text;
+
+        dictKeyL: Text;
+        IDNoL: Integer;
+
+        specInformationL: Record "Vehicle Spec  Information";
 
     begin
         if jsonText = '' then
@@ -165,35 +177,67 @@ codeunit 50010 "Ext Integration"
         if not jsonObj.ReadFrom(jsonText) then
             Error('JSON Parsing Error');
 
+        if jsonObj.Get('code', Token_resultCodeL) then begin
+            if Token_resultCodeL.IsValue then begin
+                if not (Token_resultCodeL.AsValue().AsText() = '0000') then begin
+                    jsonObj.Get('message', Token_resultCodeL);
+                    Error('🪛파트존 메시지 :: %1', Token_resultCodeL.AsValue().AsText());
+                end;
+            end;
+
+        end;
         if jsonObj.Get('data', jsonToken) then begin
             if jsonToken.IsObject then begin
                 jsonToken.AsObject().Get('spec', jsonTokenSpecL);
                 if jsonTokenSpecL.IsObject then begin
                     jsonObj_pz_v1_ObjectL := jsonTokenSpecL.AsObject();
-                    /*
-                                    "maker": "BMW", - Vehicle Manufacturer
-                                    "model": "320d", - Vehicle Model
-                                    "series": "F30", - Vehicle Variant
-                                    "yearDate": "2014", - Year
-                                    "chassis": "SEDAN", - Body Type
-                                    "engine": "N47D20C", - Engine No.
-                                    "fuelType": "diesel", - Fuel
-                                    "transMission": "", - Transmission
-                                    "pureEngineOil" 엔진오일량: "5.20000",
-                                    "viscosity" 엔진오일 점도: "5W30",
-                                    "standardSpec" 엔진오일 규격: "LL-04",
-                                    "missionOil" 미션오일량: "8.0",
-                                    "wiperCode1" 와이퍼사이즈-왼쪽: "L600T060",
-                                    "wiperCode2" 와이퍼사이즈-오른쪽: "L475B060",
-                                    "antiFreezeSpec" 부동액 규격: "G11",
-                                    "batteryType" 배터리 타입: "AGM",
-                                    "capacity" 배터리 용량: "95",
-                                    "chargingTerminal": "L"
-                    */
+                    specListL := jsonObj_pz_v1_ObjectL.Keys;
+                    foreach specKeyL in specListL do begin
+                        jsonObj_pz_v1_ObjectL.Get(specKeyL, specTokenL);
+                        if specTokenL.IsValue then begin
+                            specDictL.Add(specKeyL, specTokenL.AsValue().AsText());
+                            if specKeyL = 'maker' then
+                                VehicleTemp."Vehicle Manufacturer" := specTokenL.AsValue().AsText();
+                            if specKeyL = 'model' then
+                                VehicleTemp."Vehicle Model" := specTokenL.AsValue().AsText();
+                            if specKeyL = 'series' then
+                                VehicleTemp."Vehicle Variant" := specTokenL.AsValue().AsText();
+                            if specKeyL = 'yearDate' then
+                                VehicleTemp.Year := specTokenL.AsValue().AsText();
+                            if specKeyL = 'chassis' then
+                                VehicleTemp."Body Type" := specTokenL.AsValue().AsText();
+                            if specKeyL = 'engine' then
+                                VehicleTemp."Engine No. (Type)" := specTokenL.AsValue().AsText();
+                            if specKeyL = 'fuelType' then
+                                VehicleTemp.Fuel := specTokenL.AsValue().AsText();
+                        end;
+                    end;
+
+                    if specDictL.Count > 0 then begin
+                        IDNoL := 10000;
+                        foreach dictKeyL in specDictL.Keys do begin
+                            specInformationL.Reset();
+                            specInformationL.SetRange(VIN, VehicleTemp."Vehicle Identification No.");
+                            specInformationL.SetRange(Type, specInformationL.Type::Spec);
+                            specInformationL.SetFilter("Attribute Name", dictKeyL);
+                            if specInformationL.FindSet() then begin
+                                specInformationL."Attribute Value" := specDictL.Get(dictKeyL);
+                                specInformationL.Modify();
+                            end else begin
+                                specInformationL.Init();
+                                specInformationL.VIN := VehicleTemp."Vehicle Identification No.";
+                                specInformationL.Type := specInformationL.Type::Spec;
+                                specInformationL.ID += 10;
+                                specInformationL.Insert();
+                                specInformationL."Attribute Name" := dictKeyL;
+                                specInformationL."Attribute Value" := specDictL.Get(dictKeyL);
+                                specInformationL.Modify();
+                            end;
+                        end;
+                    end;
                 end;
             end;
         end;
-        //TODO Confirm 화면 Refresh.
     end;
 
     procedure Send_OCR(var vehicleG: Record Vehicle temporary)
@@ -329,6 +373,7 @@ codeunit 50010 "Ext Integration"
         ocrlog.RecvText.CreateOutStream(ROStream);
         recvText.Write(ROStream);
         ocrlog.Modify();
+        Message('Done!');
     end;
 
 

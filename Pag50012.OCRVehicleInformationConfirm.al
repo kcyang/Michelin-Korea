@@ -44,6 +44,10 @@ page 50012 "OCR Vehicle InformationConfirm"
                     ToolTip = 'Specifies the value of the Registration Date field.';
                 }
             }
+            group(Spec)
+            {
+
+            }
         }
     }
 
@@ -65,6 +69,29 @@ page 50012 "OCR Vehicle InformationConfirm"
                     extint: Codeunit "Ext Integration";
                 begin
                     extint.Send_PZ(Rec);
+                    CurrPage.Update();
+                end;
+            }
+            action(ShowPZ)
+            {
+                ApplicationArea = All;
+                CaptionML = ENU = 'View Spec Information', KOR = '파트존 결과보기';
+                Promoted = true;
+                PromotedCategory = Process;
+                PromotedIsBig = true;
+                Image = ServicePriceAdjustment;
+
+                trigger OnAction()
+                var
+                    specPage: page "Vehicle Spec Inforamations";
+                    specInforRecL: Record "Vehicle Spec  Information";
+                begin
+                    specInforRecL.Reset();
+                    specInforRecL.SetRange(VIN, Rec."Vehicle Identification No.");
+                    specInforRecL.SetRange(Type, specInforRecL.Type::Spec);
+
+                    specPage.SetRecord(specInforRecL);
+                    specPage.Run();
                 end;
             }
         }
