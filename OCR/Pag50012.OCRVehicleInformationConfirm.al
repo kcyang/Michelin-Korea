@@ -46,7 +46,31 @@ page 50012 "OCR Vehicle InformationConfirm"
             }
             group(Spec)
             {
-
+                CaptionML = ENU = 'Vehicle Spec Information', KOR = '차량 사양 정보';
+                field("Vehicle Manufacturer"; Rec."Vehicle Manufacturer")
+                {
+                    ApplicationArea = All;
+                }
+                field("Vehicle Model"; Rec."Vehicle Model")
+                {
+                    ApplicationArea = All;
+                }
+                field("Vehicle Variant"; Rec."Vehicle Variant")
+                {
+                    ApplicationArea = All;
+                }
+                field("Body Type"; Rec."Body Type")
+                {
+                    ApplicationArea = All;
+                }
+                field("Engine No. (Type)"; Rec."Engine No. (Type)")
+                {
+                    ApplicationArea = All;
+                }
+                field(Fuel; Rec.Fuel)
+                {
+                    ApplicationArea = All;
+                }
             }
         }
     }
@@ -89,11 +113,17 @@ page 50012 "OCR Vehicle InformationConfirm"
                     specInforRecL.Reset();
                     specInforRecL.SetRange(VIN, Rec."Vehicle Identification No.");
                     specInforRecL.SetRange(Type, specInforRecL.Type::Spec);
-
-                    specPage.SetRecord(specInforRecL);
-                    specPage.Run();
+                    if specInforRecL.FindSet() then begin
+                        specPage.SetTableView(specInforRecL);
+                        specPage.Run();
+                    end;
                 end;
             }
         }
     }
+
+    procedure setVehicleRecord(VehicleP: Record Vehicle temporary)
+    begin
+        Rec := VehicleP;
+    end;
 }

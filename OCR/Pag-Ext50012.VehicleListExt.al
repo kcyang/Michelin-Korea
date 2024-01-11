@@ -32,13 +32,19 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
                 PromotedCategory = Category6;
                 PromotedIsBig = true;
             }
-            action(test)
+            action(TEST)
             {
                 ApplicationArea = All;
+                Promoted = true;
+                PromotedCategory = Category6;
+                PromotedIsBig = true;
+                Image = CheckRulesSyntax;
                 trigger OnAction()
+                var
+                    specInforpageL: page "OCR Vehicle InformationConfirm";
                 begin
-                    VehicleG.Copy(Rec);
-                    SendOCR.Send_PZ(VehicleG);
+                    //기존에 Vehilce Card 에서 열때에는 기존 Record 와 연결된 내용으로 아래와 같이 열것.
+                    Page.Run(50012, Rec);
                 end;
             }
             action("OCR Search")

@@ -150,7 +150,7 @@ codeunit 50010 "Ext Integration"
 
     end;
 
-    procedure Get_PZ_Text(jsonText: Text)
+    procedure Get_PZ_Text(jsonText: Text; var vehicleG: Record Vehicle temporary)
     var
         jsonObj: JsonObject;
         jsonToken: JsonToken;
@@ -196,20 +196,34 @@ codeunit 50010 "Ext Integration"
                         jsonObj_pz_v1_ObjectL.Get(specKeyL, specTokenL);
                         if specTokenL.IsValue then begin
                             specDictL.Add(specKeyL, specTokenL.AsValue().AsText());
-                            if specKeyL = 'maker' then
-                                VehicleTemp."Vehicle Manufacturer" := specTokenL.AsValue().AsText();
-                            if specKeyL = 'model' then
-                                VehicleTemp."Vehicle Model" := specTokenL.AsValue().AsText();
-                            if specKeyL = 'series' then
-                                VehicleTemp."Vehicle Variant" := specTokenL.AsValue().AsText();
-                            if specKeyL = 'yearDate' then
-                                VehicleTemp.Year := specTokenL.AsValue().AsText();
-                            if specKeyL = 'chassis' then
-                                VehicleTemp."Body Type" := specTokenL.AsValue().AsText();
-                            if specKeyL = 'engine' then
-                                VehicleTemp."Engine No. (Type)" := specTokenL.AsValue().AsText();
-                            if specKeyL = 'fuelType' then
-                                VehicleTemp.Fuel := specTokenL.AsValue().AsText();
+                            if specKeyL = 'maker' then begin
+                                vehicleG."Vehicle Manufacturer" := specTokenL.AsValue().AsText();
+                                // vehicleG.Modify();
+                            end;
+                            if specKeyL = 'model' then begin
+                                vehicleG."Vehicle Model" := specTokenL.AsValue().AsText();
+                                // vehicleG.Modify();
+                            end;
+                            if specKeyL = 'series' then begin
+                                vehicleG."Vehicle Variant" := specTokenL.AsValue().AsText();
+                                // vehicleG.Modify();
+                            end;
+                            if specKeyL = 'yearDate' then begin
+                                vehicleG.Year := specTokenL.AsValue().AsText();
+                                // vehicleG.Modify();
+                            end;
+                            if specKeyL = 'chassis' then begin
+                                vehicleG."Body Type" := specTokenL.AsValue().AsText();
+                                // vehicleG.Modify();
+                            end;
+                            if specKeyL = 'engine' then begin
+                                vehicleG."Engine No. (Type)" := specTokenL.AsValue().AsText();
+                                // vehicleG.Modify();
+                            end;
+                            if specKeyL = 'fuelType' then begin
+                                vehicleG.Fuel := specTokenL.AsValue().AsText();
+                                // vehicleG.Modify();
+                            end;
                         end;
                     end;
 
@@ -217,7 +231,7 @@ codeunit 50010 "Ext Integration"
                         IDNoL := 10000;
                         foreach dictKeyL in specDictL.Keys do begin
                             specInformationL.Reset();
-                            specInformationL.SetRange(VIN, VehicleTemp."Vehicle Identification No.");
+                            specInformationL.SetRange(VIN, vehicleG."Vehicle Identification No.");
                             specInformationL.SetRange(Type, specInformationL.Type::Spec);
                             specInformationL.SetFilter("Attribute Name", dictKeyL);
                             if specInformationL.FindSet() then begin
@@ -225,7 +239,7 @@ codeunit 50010 "Ext Integration"
                                 specInformationL.Modify();
                             end else begin
                                 specInformationL.Init();
-                                specInformationL.VIN := VehicleTemp."Vehicle Identification No.";
+                                specInformationL.VIN := vehicleG."Vehicle Identification No.";
                                 specInformationL.Type := specInformationL.Type::Spec;
                                 specInformationL.ID += 10;
                                 specInformationL.Insert();
@@ -363,7 +377,7 @@ codeunit 50010 "Ext Integration"
         httpResponse.Content().ReadAs(respText);
 
         if httpResponse.HttpStatusCode = 200 then begin
-            Get_PZ_Text(respText);
+            Get_PZ_Text(respText, vehicleG);
             ocrlog.Status := 'Success';
         end else begin
             ocrlog.Status := 'Error';
@@ -373,7 +387,7 @@ codeunit 50010 "Ext Integration"
         ocrlog.RecvText.CreateOutStream(ROStream);
         recvText.Write(ROStream);
         ocrlog.Modify();
-        Message('Done!');
+        Message('파트존 조회완료!');
     end;
 
 
