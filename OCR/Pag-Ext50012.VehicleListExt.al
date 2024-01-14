@@ -32,9 +32,10 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
                 PromotedCategory = Category6;
                 PromotedIsBig = true;
             }
-            action(TEST)
+            action(ConfirmVehicleReg)
             {
                 ApplicationArea = All;
+                CaptionML = ENU = 'Confirm Vehicle Info.', KOR = '차량등록 정보확인';
                 Promoted = true;
                 PromotedCategory = Category6;
                 PromotedIsBig = true;

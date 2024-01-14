@@ -12,10 +12,8 @@ codeunit 50010 "Ext Integration"
         // httpRequest: HttpRequestMessage;
         httpHeader: HttpHeaders;
         respText: Text;
-        VehicleTemp: Record Vehicle temporary;
-
-
-    procedure Get_OCR_Text(jsonText: Text)
+    //VehicleTemp: Record Vehicle temporary;
+    procedure Get_OCR_Text(jsonText: Text; var VehicleP: Record Vehicle temporary)
     var
         jsonObj: JsonObject;
         jsonToken: JsonToken;
@@ -128,18 +126,35 @@ codeunit 50010 "Ext Integration"
                                 listFields.Get(indexofText + 2, ModelYearL);
                             end;
 
-                            VehicleTemp.Init();
-                            VehicleTemp."Vehicle No." := VehicleLicenseNoL;
-                            VehicleTemp."Vehicle Identification No." := VINNoTextL;
-                            VehicleTemp."Licence-Plate No." := VehicleLicenseNoL;
-                            VehicleTemp."National Code" := SpecL;
-                            VehicleTemp.Year := ModelYearL;
-                            VehicleTemp."Registration Date" := RegistDateDT;
-                            VehicleTemp.Insert(true);
-
-                            Page.Run(50012, VehicleTemp);
-                            // TODO 확인페이지에서 입력한 내용을 Vehicle 에 적용하기.
-                            // TODO 그 다음에, Part Zone 에 보내기. 
+                            if VehicleP."Vehicle Identification No." = VINNoTextL then begin
+                                VehicleP."Licence-Plate No." := VehicleLicenseNoL;
+                                VehicleP."National Code" := SpecL;
+                                VehicleP.Year := ModelYearL;
+                                VehicleP."Registration Date" := RegistDateDT;
+                                VehicleP.Modify();
+                            end else begin
+                                VehicleP."Vehicle Identification No." := VINNoTextL;
+                                VehicleP."Licence-Plate No." := VehicleLicenseNoL;
+                                VehicleP."National Code" := SpecL;
+                                VehicleP.Year := ModelYearL;
+                                VehicleP."Registration Date" := RegistDateDT;
+                                VehicleP.Modify();
+                            end;
+                            /*
+                                                        VehicleTemp.Init();
+                                                        VehicleTemp."Vehicle No." := VehicleLicenseNoL;
+                                                        VehicleTemp."Vehicle Identification No." := VINNoTextL;
+                                                        VehicleTemp."Licence-Plate No." := VehicleLicenseNoL;
+                                                        VehicleTemp."National Code" := SpecL;
+                                                        VehicleTemp.Year := ModelYearL;
+                                                        VehicleTemp."Registration Date" := RegistDateDT;
+                                                        VehicleTemp.Insert(true);
+                            */
+                            Commit();
+                            // Page.Run(50012, VehicleP);
+                            if Page.RunModal(50012, VehicleP) = Action::LookupOK then begin
+                                ;
+                            end
                             //Message('최초등록일==>[%5]\nVIN==>[%1]\n차량번호==>[%2]\n형식==>[%3]\n모델연도==>[%4]', VINNoTextL, VehicleLicenseNoL, SpecL, ModelYearL, RegistDateDT);
 
                         end;
@@ -318,7 +333,7 @@ codeunit 50010 "Ext Integration"
             recvText.AddText(respText);
 
             if httpResponse.HttpStatusCode = 200 then begin
-                Get_OCR_Text(respText);
+                Get_OCR_Text(respText, vehicleG);
                 ocrlog.Status := 'Success';
             end else begin
                 ocrlog.Status := 'Error';
