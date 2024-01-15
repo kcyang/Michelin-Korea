@@ -12,7 +12,7 @@ table 50012 "Vehicle Spec  Information"
         field(2; "Type"; Option)
         {
             Caption = 'Type';
-            OptionCaptionML = ENU = 'Spec,Part', KOR = '사양,부품';
+            OptionCaptionML = ENU = 'Spec,Part,Detail', KOR = '사양,부품,부품정보';
             OptionMembers = Spec,Part;
         }
         field(3; ID; Integer)

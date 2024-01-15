@@ -22,22 +22,31 @@ page 50010 OCRWebSetup
                 Caption = 'OCR Naver API';
                 field("Security Key"; Rec."Security Key")
                 {
+                    CaptionML = ENU = 'Security Key', KOR = '암호키';
                     ApplicationArea = All;
                 }
                 field("Invoke URL"; Rec."Invoke URL")
                 {
+                    CaptionML = ENU = 'Invoke URL', KOR = '접속URL';
                     ApplicationArea = All;
                 }
             }
             group(PartZone)
             {
                 Caption = 'PartZone API';
-                field("Partzone Invoke URL"; rec."PZ_Invoke URL")
+                field("Partzone Spec Invoke URL"; rec."PZ_Invoke URL")
                 {
+                    CaptionML = ENU = 'PartZone Spec Invoke URL', KOR = '파트존 사양접속URL';
+                    ApplicationArea = All;
+                }
+                field("Partzone Parts Invoke URL"; rec."PZ_Parts_Invoke URL")
+                {
+                    CaptionML = ENU = 'PartZone Parts Invoke URL', KOR = '파트존 부품접속URL';
                     ApplicationArea = All;
                 }
                 field("Partzone Key Code"; rec."PZ_Key Code")
                 {
+                    CaptionML = ENU = 'PartZone Key Code', KOR = '파트존 키코드';
                     ApplicationArea = All;
                 }
             }

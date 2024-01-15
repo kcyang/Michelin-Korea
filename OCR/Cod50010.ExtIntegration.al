@@ -165,6 +165,121 @@ codeunit 50010 "Ext Integration"
 
     end;
 
+    procedure Get_PZ_Detail_Text(jsonText: Text; var vehicleG: Record Vehicle temporary)
+    var
+        jsonObj: JsonObject;
+        jsonToken: JsonToken;
+        Token_resultCodeL: JsonToken;
+        jsonTokenSpecL: JsonToken;
+        jsonToken_ModelL: JsonToken;
+        jsonObj_pz_v1_ObjectL: JsonObject;
+        specTokenL: JsonToken;
+        partsTokenL: JsonToken;
+        jsonArray_parts: JsonArray;
+
+        specListL: List of [Text];
+        specDictL: Dictionary of [Text, Text];
+        specValuesL: List of [Text];
+        specKeyL: Text;
+
+        dictKeyL: Text;
+        IDNoL: Integer;
+
+        specInformationL: Record "Vehicle Spec  Information";
+
+    begin
+        if jsonText = '' then
+            Error('There is no text parameter');
+
+        if not jsonObj.ReadFrom(jsonText) then
+            Error('JSON Parsing Error');
+
+        if jsonObj.Get('code', Token_resultCodeL) then begin
+            if Token_resultCodeL.IsValue then begin
+                if not (Token_resultCodeL.AsValue().AsText() = '0000') then begin
+                    jsonObj.Get('message', Token_resultCodeL);
+                    Error('🪛파트존 메시지 :: %1', Token_resultCodeL.AsValue().AsText());
+                end;
+            end;
+
+        end;
+        if jsonObj.Get('data', jsonToken) then begin
+            if jsonToken.IsObject then begin
+                jsonToken.AsObject().Get('part', jsonTokenSpecL);
+                if jsonTokenSpecL.IsArray then begin
+                    jsonArray_parts := jsonTokenSpecL.AsArray();
+
+                end;
+
+
+
+
+
+                if jsonTokenSpecL.IsObject then begin
+                    jsonObj_pz_v1_ObjectL := jsonTokenSpecL.AsObject();
+                    specListL := jsonObj_pz_v1_ObjectL.Keys;
+                    foreach specKeyL in specListL do begin
+                        jsonObj_pz_v1_ObjectL.Get(specKeyL, specTokenL);
+                        if specTokenL.IsValue then begin
+                            specDictL.Add(specKeyL, specTokenL.AsValue().AsText());
+                            if specKeyL = 'maker' then begin
+                                vehicleG."Vehicle Manufacturer" := specTokenL.AsValue().AsText();
+                                // vehicleG.Modify();
+                            end;
+                            if specKeyL = 'model' then begin
+                                vehicleG."Vehicle Model" := specTokenL.AsValue().AsText();
+                                // vehicleG.Modify();
+                            end;
+                            if specKeyL = 'series' then begin
+                                vehicleG."Vehicle Variant" := specTokenL.AsValue().AsText();
+                                // vehicleG.Modify();
+                            end;
+                            if specKeyL = 'yearDate' then begin
+                                vehicleG.Year := specTokenL.AsValue().AsText();
+                                // vehicleG.Modify();
+                            end;
+                            if specKeyL = 'chassis' then begin
+                                vehicleG."Body Type" := specTokenL.AsValue().AsText();
+                                // vehicleG.Modify();
+                            end;
+                            if specKeyL = 'engine' then begin
+                                vehicleG."Engine No. (Type)" := specTokenL.AsValue().AsText();
+                                // vehicleG.Modify();
+                            end;
+                            if specKeyL = 'fuelType' then begin
+                                vehicleG.Fuel := specTokenL.AsValue().AsText();
+                                // vehicleG.Modify();
+                            end;
+                        end;
+                    end;
+
+                    if specDictL.Count > 0 then begin
+                        IDNoL := 10000;
+                        foreach dictKeyL in specDictL.Keys do begin
+                            specInformationL.Reset();
+                            specInformationL.SetRange(VIN, vehicleG."Vehicle Identification No.");
+                            specInformationL.SetRange(Type, specInformationL.Type::Spec);
+                            specInformationL.SetFilter("Attribute Name", dictKeyL);
+                            if specInformationL.FindSet() then begin
+                                specInformationL."Attribute Value" := specDictL.Get(dictKeyL);
+                                specInformationL.Modify();
+                            end else begin
+                                specInformationL.Init();
+                                specInformationL.VIN := vehicleG."Vehicle Identification No.";
+                                specInformationL.Type := specInformationL.Type::Spec;
+                                specInformationL.ID += 10;
+                                specInformationL.Insert();
+                                specInformationL."Attribute Name" := dictKeyL;
+                                specInformationL."Attribute Value" := specDictL.Get(dictKeyL);
+                                specInformationL.Modify();
+                            end;
+                        end;
+                    end;
+                end;
+            end;
+        end;
+    end;
+
     procedure Get_PZ_Text(jsonText: Text; var vehicleG: Record Vehicle temporary)
     var
         jsonObj: JsonObject;
@@ -405,6 +520,62 @@ codeunit 50010 "Ext Integration"
         Message('파트존 조회완료!');
     end;
 
+    procedure Send_PZ_Detail(var vehicleG: Record Vehicle temporary)
+    var
+        regcardname: Text;
+        ocrsetup: Record OCRWebSetup;
+        ocrlog: Record OCRLog;
+        ocrlogdatetime: DateTime;
+        sendText: BigText;
+        recvText: BigText;
+        OStream: OutStream;
+        ROStream: OutStream;
+    begin
+        ClearAll();
+
+        if ocrsetup.Get() then begin
+            if ocrsetup."PZ_Key Code" = '' then
+                Error('PartZone Key Code is empty.');
+            //Check the Parts Detail URL.
+            if ocrsetup."PZ_Parts_Invoke URL" = '' then
+                Error('PartZone Invoke URL is empty.');
+        end;
+
+        jsonBody := '{"keycode" : "' + ocrsetup."PZ_Key Code" + '","vin" : "' + vehicleG."Vehicle Identification No." + '","service":"3","packageClass":"20"}';
+
+        sendText.AddText(jsonBody);
+
+        ocrlog.Init();
+        ocrlogdatetime := CurrentDateTime;
+        ocrlog."Vehicle No." := vehicleG."Vehicle No.";
+        ocrlog.SendDateTime := ocrlogdatetime;
+        ocrlog.Insert();
+
+        ocrlog.SendText.CreateOutStream(OStream);
+        sendText.Write(OStream);
+        ocrlog.Modify();
+
+        httpContent.WriteFrom(jsonBody);
+        httpContent.GetHeaders(httpHeader);
+        httpHeader.Remove('Content-Type');
+        httpHeader.Add('Content-Type', 'application/json');
+
+        httpClient.Post(ocrsetup."PZ_Parts_Invoke URL", httpContent, httpResponse);
+        httpResponse.Content().ReadAs(respText);
+
+        if httpResponse.HttpStatusCode = 200 then begin
+            Get_PZ_Detail_Text(respText, vehicleG);
+            ocrlog.Status := 'Success';
+        end else begin
+            ocrlog.Status := 'Error';
+            Message('Error :: %1', respText);
+        end;
+
+        ocrlog.RecvText.CreateOutStream(ROStream);
+        recvText.Write(ROStream);
+        ocrlog.Modify();
+        Message('파트존 부품조회완료!');
+    end;
 
     local procedure DateTimeToUnixTimestamp(DateTimeValue: DateTime): BigInteger
     var

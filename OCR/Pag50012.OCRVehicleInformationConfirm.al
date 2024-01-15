@@ -82,7 +82,7 @@ page 50012 "OCR Vehicle InformationConfirm"
             action(SendPZ)
             {
                 ApplicationArea = All;
-                CaptionML = ENU = 'PartZone Search', KOR = '파트존 검색';
+                CaptionML = ENU = 'PartZone Search', KOR = '파트존 사양검색';
                 Promoted = true;
                 PromotedCategory = Process;
                 PromotedIsBig = true;
@@ -93,6 +93,23 @@ page 50012 "OCR Vehicle InformationConfirm"
                     extint: Codeunit "Ext Integration";
                 begin
                     extint.Send_PZ(Rec);
+                    CurrPage.Update();
+                end;
+            }
+            action(SendPZDetails)
+            {
+                ApplicationArea = All;
+                CaptionML = ENU = 'PartZone Parts Search', KOR = '파트존 부품상세 검색';
+                Promoted = true;
+                PromotedCategory = Process;
+                PromotedIsBig = true;
+                Image = ItemLedger;
+
+                trigger OnAction()
+                var
+                    extint: Codeunit "Ext Integration";
+                begin
+                    extint.Send_PZ_Detail(Rec);
                     CurrPage.Update();
                 end;
             }
