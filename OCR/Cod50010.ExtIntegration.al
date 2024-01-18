@@ -176,6 +176,9 @@ codeunit 50010 "Ext Integration"
         specTokenL: JsonToken;
         partsTokenL: JsonToken;
         jsonArray_parts: JsonArray;
+        detailTokenL: JsonToken;
+        valueTokenL: JsonToken;
+        partnameTokenL: JsonToken;
 
         specListL: List of [Text];
         specDictL: Dictionary of [Text, Text];
@@ -184,6 +187,8 @@ codeunit 50010 "Ext Integration"
 
         dictKeyL: Text;
         IDNoL: Integer;
+        iCnt: Integer;
+        I: Integer;
 
         specInformationL: Record "Vehicle Spec  Information";
 
@@ -208,73 +213,40 @@ codeunit 50010 "Ext Integration"
                 jsonToken.AsObject().Get('part', jsonTokenSpecL);
                 if jsonTokenSpecL.IsArray then begin
                     jsonArray_parts := jsonTokenSpecL.AsArray();
-
-                end;
-
-
-
-
-
-                if jsonTokenSpecL.IsObject then begin
-                    jsonObj_pz_v1_ObjectL := jsonTokenSpecL.AsObject();
-                    specListL := jsonObj_pz_v1_ObjectL.Keys;
-                    foreach specKeyL in specListL do begin
-                        jsonObj_pz_v1_ObjectL.Get(specKeyL, specTokenL);
-                        if specTokenL.IsValue then begin
-                            specDictL.Add(specKeyL, specTokenL.AsValue().AsText());
-                            if specKeyL = 'maker' then begin
-                                vehicleG."Vehicle Manufacturer" := specTokenL.AsValue().AsText();
-                                // vehicleG.Modify();
+                    iCnt := jsonArray_parts.Count;
+                    for I := 1 to iCnt do begin
+                        //파트 넣고, - 각 Array Token 의 Object 로,
+                        Clear(detailTokenL);
+                        jsonArray_parts.Get(I, detailTokenL);
+                        if detailTokenL.IsObject then begin
+                            //StockNo 를 PartID 로 넣고,
+                            detailTokenL.AsObject().Get('stockNo', valueTokenL);
+                            detailTokenL.AsObject().Get('productEngName', partnameTokenL);
+                            if valueTokenL.IsValue then begin
+                                specInformationL.Reset();
+                                specInformationL.SetRange(VIN, vehicleG."Vehicle Identification No.");
+                                specInformationL.SetRange(Type, specInformationL.Type::Part);
+                                specInformationL.SetFilter("Parts ID", '%1', valueTokenL.AsValue().AsDecimal());
+                                specInformationL.SetFilter("Attribute Name", '%1', 'PartName');
+                                if specInformationL.FindSet() then begin
+                                    ;
+                                end else begin
+                                    specInformationL.Init();
+                                    specInformationL.VIN := vehicleG."Vehicle Identification No.";
+                                    specInformationL.Type := specInformationL.Type::Part;
+                                    specInformationL.ID := getLastNumber(specInformationL, vehicleG."Vehicle Identification No.") + I; //#TODO 마지막번호 찾아서 넣기.
+                                    specInformationL."Parts ID" := valueTokenL.AsValue().AsDecimal();
+                                    specInformationL."Attribute Name" := 'PartName';
+                                    specInformationL."Attribute Value" := partnameTokenL.AsValue().AsText();
+                                    specInformationL.Insert();
+                                end;
                             end;
-                            if specKeyL = 'model' then begin
-                                vehicleG."Vehicle Model" := specTokenL.AsValue().AsText();
-                                // vehicleG.Modify();
-                            end;
-                            if specKeyL = 'series' then begin
-                                vehicleG."Vehicle Variant" := specTokenL.AsValue().AsText();
-                                // vehicleG.Modify();
-                            end;
-                            if specKeyL = 'yearDate' then begin
-                                vehicleG.Year := specTokenL.AsValue().AsText();
-                                // vehicleG.Modify();
-                            end;
-                            if specKeyL = 'chassis' then begin
-                                vehicleG."Body Type" := specTokenL.AsValue().AsText();
-                                // vehicleG.Modify();
-                            end;
-                            if specKeyL = 'engine' then begin
-                                vehicleG."Engine No. (Type)" := specTokenL.AsValue().AsText();
-                                // vehicleG.Modify();
-                            end;
-                            if specKeyL = 'fuelType' then begin
-                                vehicleG.Fuel := specTokenL.AsValue().AsText();
-                                // vehicleG.Modify();
-                            end;
+                            //valueTokenL.AsValue().AsDecimal()
+                            //키를 Part Name 을 값을 productEngName 을 넣어주고.
                         end;
+                        //파트 디테일 넣고, 그 안에 Object 의 Key/Value 를,
                     end;
-
-                    if specDictL.Count > 0 then begin
-                        IDNoL := 10000;
-                        foreach dictKeyL in specDictL.Keys do begin
-                            specInformationL.Reset();
-                            specInformationL.SetRange(VIN, vehicleG."Vehicle Identification No.");
-                            specInformationL.SetRange(Type, specInformationL.Type::Spec);
-                            specInformationL.SetFilter("Attribute Name", dictKeyL);
-                            if specInformationL.FindSet() then begin
-                                specInformationL."Attribute Value" := specDictL.Get(dictKeyL);
-                                specInformationL.Modify();
-                            end else begin
-                                specInformationL.Init();
-                                specInformationL.VIN := vehicleG."Vehicle Identification No.";
-                                specInformationL.Type := specInformationL.Type::Spec;
-                                specInformationL.ID += 10;
-                                specInformationL.Insert();
-                                specInformationL."Attribute Name" := dictKeyL;
-                                specInformationL."Attribute Value" := specDictL.Get(dictKeyL);
-                                specInformationL.Modify();
-                            end;
-                        end;
-                    end;
+                    //#TODO 여기에서 Pasing 하는 것 넣을 것.
                 end;
             end;
         end;
@@ -584,5 +556,17 @@ codeunit 50010 "Ext Integration"
         // Calculate the Unix timestamp based on the Epoch datetime of 1/1/1970
         EpochDateTime := CreateDateTime(DMY2Date(1, 1, 1970), 0T);
         exit((DateTimeValue - EpochDateTime));
+    end;
+
+    local procedure getLastNumber(var specInforRecord: Record "Vehicle Spec  Information"; VIN: code[20]): Integer
+    begin
+        specInforRecord.Reset();
+        specInforRecord.SetRange(VIN, VIN);
+        specInforRecord.SetRange(Type, specInforRecord.Type::Spec);
+
+        if specInforRecord.FindLast() then begin
+            EXIT(specInforRecord.ID);
+        end;
+
     end;
 }

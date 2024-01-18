@@ -13,7 +13,7 @@ table 50012 "Vehicle Spec  Information"
         {
             Caption = 'Type';
             OptionCaptionML = ENU = 'Spec,Part,Detail', KOR = '사양,부품,부품정보';
-            OptionMembers = Spec,Part;
+            OptionMembers = Spec,Part,Detail;
         }
         field(3; ID; Integer)
         {
