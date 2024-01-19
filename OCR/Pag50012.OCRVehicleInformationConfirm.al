@@ -129,7 +129,7 @@ page 50012 "OCR Vehicle InformationConfirm"
                 begin
                     specInforRecL.Reset();
                     specInforRecL.SetRange(VIN, Rec."Vehicle Identification No.");
-                    specInforRecL.SetRange(Type, specInforRecL.Type::Spec);
+                    specInforRecL.SetFilter(Type, '%1|%2', specInforRecL.Type::Spec, specInforRecL.Type::Part);
                     if specInforRecL.FindSet() then begin
                         specPage.SetTableView(specInforRecL);
                         specPage.Run();

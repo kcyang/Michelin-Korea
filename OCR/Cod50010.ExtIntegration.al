@@ -191,6 +191,7 @@ codeunit 50010 "Ext Integration"
         I: Integer;
 
         specInformationL: Record "Vehicle Spec  Information";
+        specL: Record "Vehicle Spec  Information";
 
     begin
         if jsonText = '' then
@@ -213,38 +214,45 @@ codeunit 50010 "Ext Integration"
                 jsonToken.AsObject().Get('part', jsonTokenSpecL);
                 if jsonTokenSpecL.IsArray then begin
                     jsonArray_parts := jsonTokenSpecL.AsArray();
-                    iCnt := jsonArray_parts.Count;
-                    for I := 1 to iCnt do begin
-                        //파트 넣고, - 각 Array Token 의 Object 로,
-                        Clear(detailTokenL);
-                        jsonArray_parts.Get(I, detailTokenL);
-                        if detailTokenL.IsObject then begin
-                            //StockNo 를 PartID 로 넣고,
-                            detailTokenL.AsObject().Get('stockNo', valueTokenL);
-                            detailTokenL.AsObject().Get('productEngName', partnameTokenL);
-                            if valueTokenL.IsValue then begin
-                                specInformationL.Reset();
-                                specInformationL.SetRange(VIN, vehicleG."Vehicle Identification No.");
-                                specInformationL.SetRange(Type, specInformationL.Type::Part);
-                                specInformationL.SetFilter("Parts ID", '%1', valueTokenL.AsValue().AsDecimal());
-                                specInformationL.SetFilter("Attribute Name", '%1', 'PartName');
-                                if specInformationL.FindSet() then begin
-                                    ;
-                                end else begin
-                                    specInformationL.Init();
-                                    specInformationL.VIN := vehicleG."Vehicle Identification No.";
-                                    specInformationL.Type := specInformationL.Type::Part;
-                                    specInformationL.ID := getLastNumber(specInformationL, vehicleG."Vehicle Identification No.") + I; //#TODO 마지막번호 찾아서 넣기.
-                                    specInformationL."Parts ID" := valueTokenL.AsValue().AsDecimal();
-                                    specInformationL."Attribute Name" := 'PartName';
-                                    specInformationL."Attribute Value" := partnameTokenL.AsValue().AsText();
-                                    specInformationL.Insert();
+                    iCnt := jsonArray_parts.Count - 1;
+                    if iCnt > 0 then begin
+                        specInformationL.Reset();
+                        specInformationL.SetRange(VIN, vehicleG."Vehicle Identification No.");
+                        specInformationL.SetRange(Type, specInformationL.Type::Part);
+                        if specInformationL.FindSet() then begin
+                            specInformationL.DeleteAll();
+                        end;
+                        for I := 0 to iCnt do begin
+                            //파트 넣고, - 각 Array Token 의 Object 로,
+                            Clear(detailTokenL);
+                            jsonArray_parts.Get(I, detailTokenL);
+                            if detailTokenL.IsObject then begin
+                                //StockNo 를 PartID 로 넣고,
+                                detailTokenL.AsObject().Get('stockNo', valueTokenL);
+                                detailTokenL.AsObject().Get('productEngName', partnameTokenL);
+                                if valueTokenL.IsValue then begin
+                                    specInformationL.Reset();
+                                    specInformationL.SetRange(VIN, vehicleG."Vehicle Identification No.");
+                                    specInformationL.SetRange(Type, specInformationL.Type::Part);
+                                    specInformationL.SetFilter("Parts ID", '%1', valueTokenL.AsValue().AsDecimal());
+                                    specInformationL.SetFilter("Attribute Name", '%1', 'PartName');
+                                    if specInformationL.FindSet() then begin
+                                        ;
+                                    end else begin
+                                        specL.Init();
+                                        specL.VIN := vehicleG."Vehicle Identification No.";
+                                        specL.Type := 1; //#TODO 유형이 Spec 으로만 들어가는 버그?? 가 있음. -> Enum 으로 바꿀까 생각중.
+                                        specL.ID := getLastNumber(specL, vehicleG."Vehicle Identification No.") + I + 10;
+                                        specL.Insert();
+                                        specL."Parts ID" := valueTokenL.AsValue().AsDecimal();
+                                        specL."Attribute Name" := 'PartName';
+                                        specL."Attribute Value" := partnameTokenL.AsValue().AsText();
+                                        specL.Modify();
+                                    end;
                                 end;
                             end;
-                            //valueTokenL.AsValue().AsDecimal()
-                            //키를 Part Name 을 값을 productEngName 을 넣어주고.
+                            //파트 디테일 넣고, 그 안에 Object 의 Key/Value 를,
                         end;
-                        //파트 디테일 넣고, 그 안에 Object 의 Key/Value 를,
                     end;
                     //#TODO 여기에서 Pasing 하는 것 넣을 것.
                 end;

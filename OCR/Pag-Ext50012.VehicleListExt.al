@@ -23,6 +23,20 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
     {
         addfirst(Catalog)
         {
+            action(deleteTable)
+            {
+                ApplicationArea = All;
+                Image = LineDescription;
+                Promoted = true;
+                PromotedCategory = Category6;
+                PromotedIsBig = true;
+                trigger OnAction()
+                var
+                    spec: Record "Vehicle Spec  Information";
+                begin
+                    spec.DeleteAll();
+                end;
+            }
             action(runLog)
             {
                 ApplicationArea = All;
