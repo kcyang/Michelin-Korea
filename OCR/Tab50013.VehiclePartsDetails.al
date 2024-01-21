@@ -13,22 +13,26 @@ table 50013 "Vehicle Parts Details"
         {
             Caption = 'Parts ID';
         }
-        field(3; "Line No."; Integer)
+        field(3; "Category"; Code[10])
+        {
+            Caption = 'Category';
+        }
+        field(4; "Line No."; Integer)
         {
             Caption = 'Line No.';
         }
-        field(4; "Attribute Name"; Text[100])
+        field(5; "Attribute Name"; Text[100])
         {
             Caption = 'Attribute Name';
         }
-        field(5; "Attribute Value"; Text[250])
+        field(6; "Attribute Value"; Text[250])
         {
             Caption = 'Attribute Value';
         }
     }
     keys
     {
-        key(PK; VIN, "Parts ID", "Line No.")
+        key(PK; VIN, "Parts ID", "Category", "Line No.")
         {
             Clustered = true;
         }

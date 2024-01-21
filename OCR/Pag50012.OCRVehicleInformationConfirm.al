@@ -126,13 +126,16 @@ page 50012 "OCR Vehicle InformationConfirm"
                 var
                     specPage: page "Vehicle Spec Inforamations";
                     specInforRecL: Record "Vehicle Spec  Information";
+                    specTypeL: Enum "Spec Type";
                 begin
                     specInforRecL.Reset();
                     specInforRecL.SetRange(VIN, Rec."Vehicle Identification No.");
-                    specInforRecL.SetFilter(Type, '%1|%2', specInforRecL.Type::Spec, specInforRecL.Type::Part);
+                    specInforRecL.SetFilter(SpecType, '%1|%2', specTypeL::Spec, specTypeL::Part);
                     if specInforRecL.FindSet() then begin
                         specPage.SetTableView(specInforRecL);
                         specPage.Run();
+                    end else begin
+                        Message('해당 차량에 대한 부품정보가 없습니다. 먼저 부품조회를 해주세요.!');
                     end;
                 end;
             }

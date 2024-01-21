@@ -9,11 +9,9 @@ table 50012 "Vehicle Spec  Information"
         {
             Caption = 'VIN';
         }
-        field(2; "Type"; Option)
+        field(2; "SpecType"; Enum "Spec Type")
         {
             Caption = 'Type';
-            OptionCaptionML = ENU = 'Spec,Part';
-            OptionMembers = Spec,Part;
         }
         field(3; ID; Integer)
         {
@@ -31,10 +29,14 @@ table 50012 "Vehicle Spec  Information"
         {
             Caption = 'Attribute Value';
         }
+        field(7; "Category"; Code[10])
+        {
+            Caption = 'Category';
+        }
     }
     keys
     {
-        key(PK; VIN, "Type", ID)
+        key(PK; VIN, "SpecType", ID)
         {
             Clustered = true;
         }

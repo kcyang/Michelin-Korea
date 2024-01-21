@@ -23,29 +23,29 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
     {
         addfirst(Catalog)
         {
-            action(deleteTable)
-            {
-                ApplicationArea = All;
-                Image = LineDescription;
-                Promoted = true;
-                PromotedCategory = Category6;
-                PromotedIsBig = true;
-                trigger OnAction()
-                var
-                    spec: Record "Vehicle Spec  Information";
-                begin
-                    spec.DeleteAll();
-                end;
-            }
-            action(runLog)
-            {
-                ApplicationArea = All;
-                Image = LineDescription;
-                RunObject = page "OCR Log List";
-                Promoted = true;
-                PromotedCategory = Category6;
-                PromotedIsBig = true;
-            }
+            // action(deleteTable)
+            // {
+            //     ApplicationArea = All;
+            //     Image = LineDescription;
+            //     Promoted = true;
+            //     PromotedCategory = Category6;
+            //     PromotedIsBig = true;
+            //     trigger OnAction()
+            //     var
+            //         spec: Record "Vehicle Spec  Information";
+            //     begin
+            //         spec.DeleteAll();
+            //     end;
+            // }
+            // action(runLog)
+            // {
+            //     ApplicationArea = All;
+            //     Image = LineDescription;
+            //     RunObject = page "OCR Log List";
+            //     Promoted = true;
+            //     PromotedCategory = Category6;
+            //     PromotedIsBig = true;
+            // }
             action(ConfirmVehicleReg)
             {
                 ApplicationArea = All;
@@ -65,7 +65,7 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
             action("OCR Search")
             {
                 ApplicationArea = All;
-                CaptionML = ENU = 'OCR Search', KOR = '차량등록증 등록/검색';
+                CaptionML = ENU = 'Take/Search a Photo of Veh.Reg.', KOR = '차량등록증 사진찍기/검색';
                 Image = AdministrationSalesPurchases;
                 Promoted = true;
                 PromotedCategory = Category6;
@@ -75,7 +75,6 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
                 var
                     IsSuccess: Boolean;
                 begin
-                    Message('차량등록증 업로드/실행');
                     IsSuccess := Camera.AddPicture(Rec, Rec.FieldNo("Vehicle Registration Card"));
                     if IsSuccess then begin
                         VehicleG.Copy(Rec);
@@ -187,9 +186,9 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
         Camera: Codeunit Camera;
         [InDataSet]
         CameraAvailable: Boolean;
-        OverrideImageQst: Label 'The existing picture will be replaced. Do you want to continue?';
-        DeleteImageQst: Label 'Are you sure you want to delete the picture?';
-        SelectPictureTxt: Label 'Select a picture to upload';
+        OverrideImageQst: Label '이미 등록된 이미지가 교체됩니다. 그래도 계속하시겠습니까?';
+        DeleteImageQst: Label '등록된 이미지를 정말 삭제하시겠습니까?';
+        SelectPictureTxt: Label '차량등록증 이미지를 선택하세요.';
         DeleteExportEnabled: Boolean;
         VehicleG: Record Vehicle temporary;
         SendOCR: Codeunit "Ext Integration";

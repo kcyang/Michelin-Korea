@@ -5,7 +5,8 @@ page 50013 "Vehicle Spec Inforamations"
     PageType = List;
     SourceTable = "Vehicle Spec  Information";
     UsageCategory = Lists;
-    
+    Editable = false;
+
     layout
     {
         area(content)
@@ -22,10 +23,23 @@ page 50013 "Vehicle Spec Inforamations"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Attribute Value field.';
                 }
-                field("Type"; Rec."Type")
+                field("Category"; Rec.Category)
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Category field.';
+                }
+                field("Type"; Rec."SpecType")
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Type field.';
+                }
+            }
+
+            group(subpartdetail)
+            {
+                part(SubLink; "Part Detail List")
+                {
+                    SubPageLink = VIN = field(VIN), "Parts ID" = field("Parts ID"), Category = field(Category);
                 }
             }
         }

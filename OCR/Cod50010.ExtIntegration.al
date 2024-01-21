@@ -179,19 +179,23 @@ codeunit 50010 "Ext Integration"
         detailTokenL: JsonToken;
         valueTokenL: JsonToken;
         partnameTokenL: JsonToken;
+        partCategoryL: JsonToken;
 
-        specListL: List of [Text];
-        specDictL: Dictionary of [Text, Text];
-        specValuesL: List of [Text];
-        specKeyL: Text;
+        partDetailObjL: JsonObject;
+        partDetailTokenL: JsonToken;
 
-        dictKeyL: Text;
-        IDNoL: Integer;
+        partKeysL: List of [Text];
+        KeyL: Text;
+
+        //dictKeyL: Text;
+        //IDNoL: Integer;
         iCnt: Integer;
         I: Integer;
 
         specInformationL: Record "Vehicle Spec  Information";
         specL: Record "Vehicle Spec  Information";
+        specTypeL: Enum "Spec Type";
+        partDetialL: Record "Vehicle Parts Details";
 
     begin
         if jsonText = '' then
@@ -214,47 +218,77 @@ codeunit 50010 "Ext Integration"
                 jsonToken.AsObject().Get('part', jsonTokenSpecL);
                 if jsonTokenSpecL.IsArray then begin
                     jsonArray_parts := jsonTokenSpecL.AsArray();
-                    iCnt := jsonArray_parts.Count - 1;
+                    iCnt := jsonArray_parts.Count;
                     if iCnt > 0 then begin
                         specInformationL.Reset();
                         specInformationL.SetRange(VIN, vehicleG."Vehicle Identification No.");
-                        specInformationL.SetRange(Type, specInformationL.Type::Part);
+                        specInformationL.SetRange(SpecType, specTypeL::Part);
                         if specInformationL.FindSet() then begin
                             specInformationL.DeleteAll();
                         end;
-                        for I := 0 to iCnt do begin
-                            //파트 넣고, - 각 Array Token 의 Object 로,
-                            Clear(detailTokenL);
-                            jsonArray_parts.Get(I, detailTokenL);
+                        partDetialL.Reset();
+                        partDetialL.SetRange(VIN, vehicleG."Vehicle Identification No.");
+                        if partDetialL.FindSet() then
+                            partDetialL.DeleteAll();
+
+                        I := 100;
+                        foreach detailTokenL in jsonArray_parts do begin
+                            I += 10;
                             if detailTokenL.IsObject then begin
-                                //StockNo 를 PartID 로 넣고,
-                                detailTokenL.AsObject().Get('stockNo', valueTokenL);
-                                detailTokenL.AsObject().Get('productEngName', partnameTokenL);
+                                partDetailObjL := detailTokenL.AsObject();
+                                partKeysL := partDetailObjL.Keys;
+
+                                partDetailObjL.Get('stockNo', valueTokenL);
+                                partDetailObjL.Get('productEngName', partnameTokenL);
+                                partDetailObjL.Get('category', partCategoryL);
                                 if valueTokenL.IsValue then begin
                                     specInformationL.Reset();
                                     specInformationL.SetRange(VIN, vehicleG."Vehicle Identification No.");
-                                    specInformationL.SetRange(Type, specInformationL.Type::Part);
+                                    specInformationL.SetRange(SpecType, specTypeL::Part);
                                     specInformationL.SetFilter("Parts ID", '%1', valueTokenL.AsValue().AsDecimal());
                                     specInformationL.SetFilter("Attribute Name", '%1', 'PartName');
+                                    specInformationL.SetFilter("category", '%1', partCategoryL.AsValue().AsText());
                                     if specInformationL.FindSet() then begin
                                         ;
                                     end else begin
                                         specL.Init();
                                         specL.VIN := vehicleG."Vehicle Identification No.";
-                                        specL.Type := 1; //#TODO 유형이 Spec 으로만 들어가는 버그?? 가 있음. -> Enum 으로 바꿀까 생각중.
+                                        specL.SpecType := specTypeL::Part;
                                         specL.ID := getLastNumber(specL, vehicleG."Vehicle Identification No.") + I + 10;
                                         specL.Insert();
                                         specL."Parts ID" := valueTokenL.AsValue().AsDecimal();
                                         specL."Attribute Name" := 'PartName';
                                         specL."Attribute Value" := partnameTokenL.AsValue().AsText();
+                                        specL.Category := partCategoryL.AsValue().AsText();
                                         specL.Modify();
+
+                                        foreach KeyL in partKeysL do begin
+                                            partDetailObjL.Get(KeyL, partDetailTokenL);
+
+                                            partDetialL.Init();
+                                            partDetialL.VIN := vehicleG."Vehicle Identification No.";
+                                            partDetialL."Parts ID" := valueTokenL.AsValue().AsDecimal();
+                                            partDetialL.Category := partCategoryL.AsValue().AsText();
+                                            partDetialL."Line No." += 10;
+                                            partDetialL.Insert();
+
+                                            partDetialL."Attribute Name" := KeyL;
+
+                                            if KeyL = 'stockNo' then
+                                                partDetialL."Attribute Value" := FORMAT(partDetailTokenL.AsValue().AsDecimal())
+                                            else begin
+                                                if partDetailTokenL.AsValue().IsNull then
+                                                    partDetialL."Attribute Value" := ''
+                                                else
+                                                    partDetialL."Attribute Value" := partDetailTokenL.AsValue().AsText();
+                                            end;
+                                            partDetialL.Modify();
+                                        end;
                                     end;
                                 end;
                             end;
-                            //파트 디테일 넣고, 그 안에 Object 의 Key/Value 를,
                         end;
                     end;
-                    //#TODO 여기에서 Pasing 하는 것 넣을 것.
                 end;
             end;
         end;
@@ -279,6 +313,7 @@ codeunit 50010 "Ext Integration"
         IDNoL: Integer;
 
         specInformationL: Record "Vehicle Spec  Information";
+        specTypeL: Enum "Spec Type";
 
     begin
         if jsonText = '' then
@@ -308,31 +343,24 @@ codeunit 50010 "Ext Integration"
                             specDictL.Add(specKeyL, specTokenL.AsValue().AsText());
                             if specKeyL = 'maker' then begin
                                 vehicleG."Vehicle Manufacturer" := specTokenL.AsValue().AsText();
-                                // vehicleG.Modify();
                             end;
                             if specKeyL = 'model' then begin
                                 vehicleG."Vehicle Model" := specTokenL.AsValue().AsText();
-                                // vehicleG.Modify();
                             end;
                             if specKeyL = 'series' then begin
                                 vehicleG."Vehicle Variant" := specTokenL.AsValue().AsText();
-                                // vehicleG.Modify();
                             end;
                             if specKeyL = 'yearDate' then begin
                                 vehicleG.Year := specTokenL.AsValue().AsText();
-                                // vehicleG.Modify();
                             end;
                             if specKeyL = 'chassis' then begin
                                 vehicleG."Body Type" := specTokenL.AsValue().AsText();
-                                // vehicleG.Modify();
                             end;
                             if specKeyL = 'engine' then begin
                                 vehicleG."Engine No. (Type)" := specTokenL.AsValue().AsText();
-                                // vehicleG.Modify();
                             end;
                             if specKeyL = 'fuelType' then begin
                                 vehicleG.Fuel := specTokenL.AsValue().AsText();
-                                // vehicleG.Modify();
                             end;
                         end;
                     end;
@@ -342,7 +370,7 @@ codeunit 50010 "Ext Integration"
                         foreach dictKeyL in specDictL.Keys do begin
                             specInformationL.Reset();
                             specInformationL.SetRange(VIN, vehicleG."Vehicle Identification No.");
-                            specInformationL.SetRange(Type, specInformationL.Type::Spec);
+                            specInformationL.SetRange(SpecType, specTypeL::Spec);
                             specInformationL.SetFilter("Attribute Name", dictKeyL);
                             if specInformationL.FindSet() then begin
                                 specInformationL."Attribute Value" := specDictL.Get(dictKeyL);
@@ -350,7 +378,7 @@ codeunit 50010 "Ext Integration"
                             end else begin
                                 specInformationL.Init();
                                 specInformationL.VIN := vehicleG."Vehicle Identification No.";
-                                specInformationL.Type := specInformationL.Type::Spec;
+                                specInformationL.SpecType := specTypeL::Spec;
                                 specInformationL.ID += 10;
                                 specInformationL.Insert();
                                 specInformationL."Attribute Name" := dictKeyL;
@@ -377,7 +405,7 @@ codeunit 50010 "Ext Integration"
         ROStream: OutStream;
     begin
         ClearAll();
-
+        DLG.Open('이미지를 분석중입니다....');
         if ocrsetup.Get() then begin
             if ocrsetup."Security Key" = '' then
                 Error('Security Key is empty.');
@@ -438,7 +466,7 @@ codeunit 50010 "Ext Integration"
             ocrlog.RecvText.CreateOutStream(ROStream);
             recvText.Write(ROStream);
             ocrlog.Modify();
-
+            DLG.Close();
         end;
     end;
 
@@ -454,8 +482,11 @@ codeunit 50010 "Ext Integration"
         recvText: BigText;
         OStream: OutStream;
         ROStream: OutStream;
+
     begin
         ClearAll();
+
+        DLG.Open(TEXT0001);
 
         if ocrsetup.Get() then begin
             if ocrsetup."PZ_Key Code" = '' then
@@ -497,6 +528,7 @@ codeunit 50010 "Ext Integration"
         ocrlog.RecvText.CreateOutStream(ROStream);
         recvText.Write(ROStream);
         ocrlog.Modify();
+        DLG.Close();
         Message('파트존 조회완료!');
     end;
 
@@ -512,6 +544,7 @@ codeunit 50010 "Ext Integration"
         ROStream: OutStream;
     begin
         ClearAll();
+        DLG.Open(TEXT0001);
 
         if ocrsetup.Get() then begin
             if ocrsetup."PZ_Key Code" = '' then
@@ -554,6 +587,7 @@ codeunit 50010 "Ext Integration"
         ocrlog.RecvText.CreateOutStream(ROStream);
         recvText.Write(ROStream);
         ocrlog.Modify();
+        DLG.Close();
         Message('파트존 부품조회완료!');
     end;
 
@@ -566,15 +600,22 @@ codeunit 50010 "Ext Integration"
         exit((DateTimeValue - EpochDateTime));
     end;
 
-    local procedure getLastNumber(var specInforRecord: Record "Vehicle Spec  Information"; VIN: code[20]): Integer
+    local procedure getLastNumber(specInforRecord: Record "Vehicle Spec  Information"; VIN: code[20]): Integer
+    var
+        specTypeL: Enum "Spec Type";
     begin
         specInforRecord.Reset();
         specInforRecord.SetRange(VIN, VIN);
-        specInforRecord.SetRange(Type, specInforRecord.Type::Spec);
+        specInforRecord.SetRange(SpecType, specTypeL::Spec);
 
         if specInforRecord.FindLast() then begin
             EXIT(specInforRecord.ID);
         end;
 
     end;
+
+
+    var
+        DLG: Dialog;
+        TEXT0001: TextConst ENU = 'Search Parts Information...', KOR = '부품 검색중...';
 }

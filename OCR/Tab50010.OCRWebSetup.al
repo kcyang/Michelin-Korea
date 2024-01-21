@@ -51,12 +51,4 @@ table 50010 OCRWebSetup
             Clustered = true;
         }
     }
-
-    [Scope('OnPrem')]
-    procedure GetOCRNamespace(): Text
-    begin
-
-        exit('http://server.cat.tecdoc.net')
-
-    end;
 }

@@ -152,9 +152,9 @@ pageextension 50011 VehicleCardExt extends "Vehicle Card Generic"
         Camera: Codeunit Camera;
         [InDataSet]
         CameraAvailable: Boolean;
-        OverrideImageQst: Label 'The existing picture will be replaced. Do you want to continue?';
-        DeleteImageQst: Label 'Are you sure you want to delete the picture?';
-        SelectPictureTxt: Label 'Select a picture to upload';
+        OverrideImageQst: Label '이미 등록된 이미지가 교체됩니다. 그래도 계속하시겠습니까?';
+        DeleteImageQst: Label '등록된 이미지를 정말 삭제하시겠습니까?';
+        SelectPictureTxt: Label '차량등록증 이미지를 선택하세요.';
         DeleteExportEnabled: Boolean;
         VehicleG: Record Vehicle temporary;
         SendOCR: Codeunit "Ext Integration";
