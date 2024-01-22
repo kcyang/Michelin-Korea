@@ -108,6 +108,7 @@ page 50006 AppointmentCard
                 {
                     ApplicationArea = All;
                     CaptionML = ENU = 'Status', KOR = '예약 상태';
+                    Editable = false;
                 }
 
 
@@ -188,6 +189,22 @@ page 50006 AppointmentCard
         {
             group("Handle")
             {
+                action("ContactSearch")
+                {
+                    CaptionML = ENU = 'Vehicle Search', KOR = '차량 검색';
+                    Promoted = true;
+                    PromotedIsBig = true;
+                    Image = FindCreditMemo;
+                    ApplicationArea = All;
+                    trigger OnAction()
+                    var
+                        ContactSearchResultsL: Page "Contact Search Results";
+                    begin
+                        ContactSearchResultsL.SetSearchNameStringEntered(Rec."License No.");
+                        ContactSearchResultsL.Run;
+                    end;
+
+                }
                 action("Confirm")
                 {
                     CaptionML = ENU = 'Confirm', KOR = '예약 확정';
