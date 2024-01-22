@@ -100,7 +100,7 @@ pageextension 50011 VehicleCardExt extends "Vehicle Card Generic"
             action(ExportFile)
             {
                 ApplicationArea = All;
-                Caption = 'Export Veh.Reg.Card';
+                CaptionML = ENU = 'Export Veh.Reg.Card', KOR = '차량등록증 내보내기';
                 Enabled = DeleteExportEnabled;
                 Image = Export;
                 ToolTip = 'Export the picture to a file.';
@@ -127,7 +127,7 @@ pageextension 50011 VehicleCardExt extends "Vehicle Card Generic"
             action(DeletePicture)
             {
                 ApplicationArea = All;
-                Caption = 'Delete Veh.Reg.Card';
+                CaptionML = ENU = 'Delete Veh.Reg.Card', KOR = '차량등록증 삭제';
                 Enabled = DeleteExportEnabled;
                 Image = Delete;
                 ToolTip = 'Delete the Veh.Reg.Card.';

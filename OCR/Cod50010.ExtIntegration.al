@@ -140,16 +140,6 @@ codeunit 50010 "Ext Integration"
                                 VehicleP."Registration Date" := RegistDateDT;
                                 VehicleP.Modify();
                             end;
-                            /*
-                                                        VehicleTemp.Init();
-                                                        VehicleTemp."Vehicle No." := VehicleLicenseNoL;
-                                                        VehicleTemp."Vehicle Identification No." := VINNoTextL;
-                                                        VehicleTemp."Licence-Plate No." := VehicleLicenseNoL;
-                                                        VehicleTemp."National Code" := SpecL;
-                                                        VehicleTemp.Year := ModelYearL;
-                                                        VehicleTemp."Registration Date" := RegistDateDT;
-                                                        VehicleTemp.Insert(true);
-                            */
                             Commit();
                             // Page.Run(50012, VehicleP);
                             if Page.RunModal(50012, VehicleP) = Action::LookupOK then begin
