@@ -45,7 +45,7 @@ report 50000 "Daily Sales Register-MK"
     // AP.0043273  11.05.20  SU   34782  "Exoprt to Excel" hidden as the feature since the feature is available in standard
 
     DefaultLayout = RDLC;
-    RDLCLayout = './DailySalesRegisterMK.rdl';
+    RDLCLayout = './DailyRegister/DailySalesRegisterMK.rdl';
 
     Caption = 'Daily Sales Register-MK';
 
