@@ -1,4 +1,4 @@
-tableextension 50010 VehicleExt extends Vehicle
+tableextension 50006 VehicleExt extends Vehicle
 {
     fields
     {

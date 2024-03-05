@@ -1,4 +1,4 @@
-table 50010 OCRWebSetup
+table 50006 OCRWebSetup
 {
     // +--------------------------------------------------------------+
     // | ¸ 2023 incadea Korea                                         |

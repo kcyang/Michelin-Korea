@@ -1,4 +1,4 @@
-table 50011 OCRLog
+table 50007 OCRLog
 {
     Caption = 'OCRLog';
     DataClassification = CustomerContent;
