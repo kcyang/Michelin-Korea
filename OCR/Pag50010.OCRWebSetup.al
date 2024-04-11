@@ -50,6 +50,15 @@ page 50010 OCRWebSetup
                     ApplicationArea = All;
                 }
             }
+            group(Proxy)
+            {
+                Caption = 'Server Configuration';
+                field("Proxy Server URL"; rec."Proxy URL")
+                {
+                    CaptionML = ENU = 'Proxy URL', KOR = '프록시 서버 URL';
+                    ApplicationArea = All;
+                }
+            }
         }
     }
 }

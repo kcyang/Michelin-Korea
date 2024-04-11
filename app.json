@@ -2,7 +2,7 @@
   "id": "786144f5-4a1a-4e03-912e-b61e969f4af1",
   "name": "Michelin Korea-Localization",
   "publisher": "incadea Korea",
-  "version": "1.0.0.10",
+  "version": "1.0.0.12",
   "brief": "",
   "description": "Extension for Michelin Localization",
   "privacyStatement": "",
@@ -26,7 +26,7 @@
     }
   ],
   "showMyCode": true,
-  "runtime": "7.0",
+  "runtime": "7.0",  
   "features": [
     "NoImplicitWith"
   ]

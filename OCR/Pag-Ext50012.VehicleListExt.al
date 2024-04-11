@@ -46,6 +46,15 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
             //     PromotedCategory = Category6;
             //     PromotedIsBig = true;
             // }
+            // action(runProxy)
+            // {
+            //     ApplicationArea = All;
+            //     Image = LineDescription;
+            //     RunObject = codeunit ExtIntegrationDotNet;
+            //     Promoted = true;
+            //     PromotedCategory = Category6;
+            //     PromotedIsBig = true;
+            // }
             action(ConfirmVehicleReg)
             {
                 ApplicationArea = All;
