@@ -43,6 +43,11 @@ table 50006 OCRWebSetup
             Caption = 'PartZone Parts Invoke URL';
             DataClassification = ToBeClassified;
         }
+        field(7; "Proxy URL"; Text[250])
+        {
+            Caption = 'Proxy URL';
+            DataClassification = ToBeClassified;
+        }
     }
     keys
     {

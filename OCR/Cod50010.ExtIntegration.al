@@ -1,3 +1,10 @@
+dotnet
+{
+    assembly(MKRUtilities)
+    {
+        type(MKRUtilities.WebServiceClient; mkrutil) { }
+    }
+}
 codeunit 50010 "Ext Integration"
 {
     var
@@ -6,12 +13,13 @@ codeunit 50010 "Ext Integration"
         TempBlob: Codeunit "Temp Blob";
         base64Convert: Codeunit "Base64 Convert";
         jsonBody: Text;
-        httpClient: HttpClient;
-        httpContent: HttpContent;
-        httpResponse: HttpResponseMessage;
-        // httpRequest: HttpRequestMessage;
-        httpHeader: HttpHeaders;
+        // httpClient: HttpClient;
+        // httpContent: HttpContent;
+        // httpResponse: HttpResponseMessage;
+        // // httpRequest: HttpRequestMessage;
+        // httpHeader: HttpHeaders;
         respText: Text;
+        mkrutil: DotNet mkrutil;
     //VehicleTemp: Record Vehicle temporary;
     procedure Get_OCR_Text(jsonText: Text; var VehicleP: Record Vehicle temporary)
     var
@@ -433,18 +441,26 @@ codeunit 50010 "Ext Integration"
             ocrlog.SendText.CreateOutStream(OStream);
             sendText.Write(OStream);
             ocrlog.Modify();
+            /* //Old way - Modified to use dotnet function for proxy settings.
+                        httpContent.WriteFrom(jsonBody);
+                        httpContent.GetHeaders(httpHeader);
+                        httpHeader.Remove('Content-Type');
+                        httpHeader.Add('Content-Type', 'application/json');
+                        httpHeader.Add('X-OCR-SECRET', ocrsetup."Security Key");
 
-            httpContent.WriteFrom(jsonBody);
-            httpContent.GetHeaders(httpHeader);
-            httpHeader.Remove('Content-Type');
-            httpHeader.Add('Content-Type', 'application/json');
-            httpHeader.Add('X-OCR-SECRET', ocrsetup."Security Key");
+                        httpClient.Post(ocrsetup."Invoke URL", httpContent, httpResponse);
+                        httpResponse.Content().ReadAs(respText);
+            */
+            if ocrsetup."Proxy URL" = '' then begin
+                Message('프록시 서버셋업이 누락되었습니다. 웹설정을 확인하세요.');
+                exit;
+            end;
 
-            httpClient.Post(ocrsetup."Invoke URL", httpContent, httpResponse);
-            httpResponse.Content().ReadAs(respText);
+            mkrutil := mkrutil.WebServiceClient(ocrsetup."Proxy URL");
+            respText := mkrutil.CallWebService_OCR(ocrsetup."Invoke URL", jsonBody, ocrsetup."Security Key");
 
             recvText.AddText(respText);
-
+            /* //Old way - Modified to use dotnet function for proxy settings.
             if httpResponse.HttpStatusCode = 200 then begin
                 Get_OCR_Text(respText, vehicleG);
                 ocrlog.Status := 'Success';
@@ -452,7 +468,14 @@ codeunit 50010 "Ext Integration"
                 ocrlog.Status := 'Error';
                 Message('Error :: %1', respText);
             end;
-
+            */
+            if respText <> '' then begin
+                Get_OCR_Text(respText, vehicleG);
+                ocrlog.Status := 'Success';
+            end else begin
+                ocrlog.Status := 'Error';
+                Message('Error :: 서버가 응답하지 않습니다.');
+            end;
             ocrlog.RecvText.CreateOutStream(ROStream);
             recvText.Write(ROStream);
             ocrlog.Modify();
@@ -483,6 +506,8 @@ codeunit 50010 "Ext Integration"
                 Error('PartZone Key Code is empty.');
             if ocrsetup."PZ_Invoke URL" = '' then
                 Error('PartZone Invoke URL is empty.');
+            if ocrsetup."Proxy URL" = '' then
+                Error('Proxy URL is missing.');
         end;
 
         jsonBody := '{"keycode" : "' + ocrsetup."PZ_Key Code" + '","vin" : "' + vehicleG."Vehicle Identification No." + '","type":"1"}';
@@ -499,20 +524,30 @@ codeunit 50010 "Ext Integration"
         sendText.Write(OStream);
         ocrlog.Modify();
 
-        httpContent.WriteFrom(jsonBody);
-        httpContent.GetHeaders(httpHeader);
-        httpHeader.Remove('Content-Type');
-        httpHeader.Add('Content-Type', 'application/json');
+        // httpContent.WriteFrom(jsonBody);
+        // httpContent.GetHeaders(httpHeader);
+        // httpHeader.Remove('Content-Type');
+        // httpHeader.Add('Content-Type', 'application/json');
 
-        httpClient.Post(ocrsetup."PZ_Invoke URL", httpContent, httpResponse);
-        httpResponse.Content().ReadAs(respText);
+        // httpClient.Post(ocrsetup."PZ_Invoke URL", httpContent, httpResponse);
+        // httpResponse.Content().ReadAs(respText);
 
-        if httpResponse.HttpStatusCode = 200 then begin
+        mkrutil := mkrutil.WebServiceClient(ocrsetup."Proxy URL");
+        respText := mkrutil.CallWebService(ocrsetup."PZ_Invoke URL", jsonBody);
+
+        // if httpResponse.HttpStatusCode = 200 then begin
+        //     Get_PZ_Text(respText, vehicleG);
+        //     ocrlog.Status := 'Success';
+        // end else begin
+        //     ocrlog.Status := 'Error';
+        //     Message('Error :: %1', respText);
+        // end;
+        if respText <> '' then begin
             Get_PZ_Text(respText, vehicleG);
             ocrlog.Status := 'Success';
         end else begin
             ocrlog.Status := 'Error';
-            Message('Error :: %1', respText);
+            Message('Error :: 서버가 응답하지 않습니다.');
         end;
 
         ocrlog.RecvText.CreateOutStream(ROStream);
@@ -542,6 +577,8 @@ codeunit 50010 "Ext Integration"
             //Check the Parts Detail URL.
             if ocrsetup."PZ_Parts_Invoke URL" = '' then
                 Error('PartZone Invoke URL is empty.');
+            if ocrsetup."Proxy URL" = '' then
+                Error('Proxy URL is missing.');
         end;
 
         jsonBody := '{"keycode" : "' + ocrsetup."PZ_Key Code" + '","vin" : "' + vehicleG."Vehicle Identification No." + '","service":"3","packageClass":"20"}';
@@ -558,20 +595,30 @@ codeunit 50010 "Ext Integration"
         sendText.Write(OStream);
         ocrlog.Modify();
 
-        httpContent.WriteFrom(jsonBody);
-        httpContent.GetHeaders(httpHeader);
-        httpHeader.Remove('Content-Type');
-        httpHeader.Add('Content-Type', 'application/json');
+        // httpContent.WriteFrom(jsonBody);
+        // httpContent.GetHeaders(httpHeader);
+        // httpHeader.Remove('Content-Type');
+        // httpHeader.Add('Content-Type', 'application/json');
 
-        httpClient.Post(ocrsetup."PZ_Parts_Invoke URL", httpContent, httpResponse);
-        httpResponse.Content().ReadAs(respText);
+        // httpClient.Post(ocrsetup."PZ_Parts_Invoke URL", httpContent, httpResponse);
+        // httpResponse.Content().ReadAs(respText);
 
-        if httpResponse.HttpStatusCode = 200 then begin
+        mkrutil := mkrutil.WebServiceClient(ocrsetup."Proxy URL");
+        respText := mkrutil.CallWebService(ocrsetup."PZ_Parts_Invoke URL", jsonBody);
+
+        // if httpResponse.HttpStatusCode = 200 then begin
+        //     Get_PZ_Detail_Text(respText, vehicleG);
+        //     ocrlog.Status := 'Success';
+        // end else begin
+        //     ocrlog.Status := 'Error';
+        //     Message('Error :: %1', respText);
+        // end;
+        if respText <> '' then begin
             Get_PZ_Detail_Text(respText, vehicleG);
             ocrlog.Status := 'Success';
         end else begin
             ocrlog.Status := 'Error';
-            Message('Error :: %1', respText);
+            Message('Error :: 서버가 응답하지 않습니다.');
         end;
 
         ocrlog.RecvText.CreateOutStream(ROStream);
