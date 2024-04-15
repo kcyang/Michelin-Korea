@@ -22,5 +22,6 @@ permissionset 50000 GeneratedPermission
         page OCRWebSetup = X,
         page "Part Detail List" = X,
         page "Vehicle Spec Inforamations" = X,
-        page VehRegCardPicture = X;
+        page VehRegCardPicture = X,
+        page "My Appointment List" = X;
 }
