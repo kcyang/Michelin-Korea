@@ -1,5 +1,13 @@
 pageextension 50001 "Michelin Korea RC" extends "BSS Front Office RC"
 {
+    layout
+    {
+        addlast(rolecenter)
+        {
+            part(AppointmentList; "My Appointment List") { }
+        }
+
+    }
     actions
     {
         addlast("Day End")
