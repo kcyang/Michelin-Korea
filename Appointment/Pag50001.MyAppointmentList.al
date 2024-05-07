@@ -68,5 +68,6 @@ page 50007 "My Appointment List"
     trigger OnOpenPage()
     begin
         Rec.SetFilter(Rec."Appointment Date", '%1', WorkDate());
+        Rec.SetFilter(Rec.Status, '<>%1', Rec.Status::new); //It donesn't need to see the 'new' status code.
     end;
 }
