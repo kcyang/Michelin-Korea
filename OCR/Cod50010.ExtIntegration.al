@@ -134,25 +134,26 @@ codeunit 50010 "Ext Integration"
                                 listFields.Get(indexofText + 2, ModelYearL);
                             end;
 
-                            if VehicleP."Vehicle Identification No." = VINNoTextL then begin
-                                VehicleP."Licence-Plate No." := VehicleLicenseNoL;
-                                VehicleP."National Code" := SpecL;
-                                VehicleP.Year := ModelYearL;
-                                VehicleP."Registration Date" := RegistDateDT;
-                                VehicleP.Modify();
-                            end else begin
-                                VehicleP."Vehicle Identification No." := VINNoTextL;
-                                VehicleP."Licence-Plate No." := VehicleLicenseNoL;
-                                VehicleP."National Code" := SpecL;
-                                VehicleP.Year := ModelYearL;
-                                VehicleP."Registration Date" := RegistDateDT;
-                                VehicleP.Modify();
+                            if VehicleP.FindSet() then begin
+                                if VehicleP."Vehicle Identification No." = VINNoTextL then begin
+                                    VehicleP."Licence-Plate No." := VehicleLicenseNoL;
+                                    VehicleP."National Code" := SpecL;
+                                    VehicleP.Year := ModelYearL;
+                                    VehicleP."Registration Date" := RegistDateDT;
+                                    VehicleP.Modify();
+                                end else begin
+                                    VehicleP."Vehicle Identification No." := VINNoTextL;
+                                    VehicleP."Licence-Plate No." := VehicleLicenseNoL;
+                                    VehicleP."National Code" := SpecL;
+                                    VehicleP.Year := ModelYearL;
+                                    VehicleP."Registration Date" := RegistDateDT;
+                                    VehicleP.Modify();
+                                end;
                             end;
-                            Commit();
-                            // Page.Run(50012, VehicleP);
-                            if Page.RunModal(50012, VehicleP) = Action::LookupOK then begin
-                                ;
-                            end
+
+                            VehicleConfirmPage.SetRecord(VehicleP);
+                            VehicleConfirmPage.Run();
+
                             //Message('최초등록일==>[%5]\nVIN==>[%1]\n차량번호==>[%2]\n형식==>[%3]\n모델연도==>[%4]', VINNoTextL, VehicleLicenseNoL, SpecL, ModelYearL, RegistDateDT);
 
                         end;
@@ -451,10 +452,12 @@ codeunit 50010 "Ext Integration"
                         httpClient.Post(ocrsetup."Invoke URL", httpContent, httpResponse);
                         httpResponse.Content().ReadAs(respText);
             */
+            /*
             if ocrsetup."Proxy URL" = '' then begin
                 Message('프록시 서버셋업이 누락되었습니다. 웹설정을 확인하세요.');
                 exit;
             end;
+            */
 
             mkrutil := mkrutil.WebServiceClient(ocrsetup."Proxy URL");
             respText := mkrutil.CallWebService_OCR(ocrsetup."Invoke URL", jsonBody, ocrsetup."Security Key");
@@ -506,8 +509,10 @@ codeunit 50010 "Ext Integration"
                 Error('PartZone Key Code is empty.');
             if ocrsetup."PZ_Invoke URL" = '' then
                 Error('PartZone Invoke URL is empty.');
+            /*    
             if ocrsetup."Proxy URL" = '' then
                 Error('Proxy URL is missing.');
+            */
         end;
 
         jsonBody := '{"keycode" : "' + ocrsetup."PZ_Key Code" + '","vin" : "' + vehicleG."Vehicle Identification No." + '","type":"1"}';

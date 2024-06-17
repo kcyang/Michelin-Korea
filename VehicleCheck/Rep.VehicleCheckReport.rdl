@@ -163,13 +163,16 @@
                                     <Width>1.90859in</Width>
                                   </TablixColumn>
                                   <TablixColumn>
-                                    <Width>1.73404in</Width>
+                                    <Width>1.21174in</Width>
                                   </TablixColumn>
                                   <TablixColumn>
-                                    <Width>1.769in</Width>
+                                    <Width>1.369in</Width>
                                   </TablixColumn>
                                   <TablixColumn>
-                                    <Width>1.59484in</Width>
+                                    <Width>1.17817in</Width>
+                                  </TablixColumn>
+                                  <TablixColumn>
+                                    <Width>1.33895in</Width>
                                   </TablixColumn>
                                 </TablixColumns>
                                 <TablixRows>
@@ -299,6 +302,40 @@
                                               </Paragraph>
                                             </Paragraphs>
                                             <rd:DefaultName>Textbox13</rd:DefaultName>
+                                            <Style>
+                                              <Border>
+                                                <Style>Solid</Style>
+                                              </Border>
+                                              <VerticalAlign>Middle</VerticalAlign>
+                                              <PaddingLeft>2pt</PaddingLeft>
+                                              <PaddingRight>2pt</PaddingRight>
+                                              <PaddingTop>2pt</PaddingTop>
+                                              <PaddingBottom>2pt</PaddingBottom>
+                                            </Style>
+                                          </Textbox>
+                                        </CellContents>
+                                      </TablixCell>
+                                      <TablixCell>
+                                        <CellContents>
+                                          <Textbox Name="Textbox1">
+                                            <CanGrow>true</CanGrow>
+                                            <KeepTogether>true</KeepTogether>
+                                            <Paragraphs>
+                                              <Paragraph>
+                                                <TextRuns>
+                                                  <TextRun>
+                                                    <Value>=First(Fields!Lbl_TXT006.Value, "DataSet_Result")</Value>
+                                                    <Style>
+                                                      <FontWeight>Bold</FontWeight>
+                                                    </Style>
+                                                  </TextRun>
+                                                </TextRuns>
+                                                <Style>
+                                                  <TextAlign>Center</TextAlign>
+                                                </Style>
+                                              </Paragraph>
+                                            </Paragraphs>
+                                            <rd:DefaultName>Textbox1</rd:DefaultName>
                                             <Style>
                                               <Border>
                                                 <Style>Solid</Style>
@@ -461,6 +498,42 @@
                                           </Textbox>
                                         </CellContents>
                                       </TablixCell>
+                                      <TablixCell>
+                                        <CellContents>
+                                          <Textbox Name="VHCILItem_Comment">
+                                            <CanGrow>true</CanGrow>
+                                            <KeepTogether>true</KeepTogether>
+                                            <Paragraphs>
+                                              <Paragraph>
+                                                <TextRuns>
+                                                  <TextRun>
+                                                    <Value>=Fields!VHCILItem_Comment.Value</Value>
+                                                    <Style>
+                                                      <FontSize>16pt</FontSize>
+                                                      <FontWeight>Bold</FontWeight>
+                                                      <Color>=Switch(Fields!VHCILItem_Replace.Value=true,First(Fields!Color_Replace.Value, "DataSet_Result"),Fields!VHCILItem_Attention.Value=true,First(Fields!Color_Attention.Value, "DataSet_Result"),Fields!VHCILItem_OK.Value=true,First(Fields!Color_OK.Value, "DataSet_Result"),Fields!VHCILItem_New.Value=true,First(Fields!Color_New.Value, "DataSet_Result"))</Color>
+                                                    </Style>
+                                                  </TextRun>
+                                                </TextRuns>
+                                                <Style>
+                                                  <TextAlign>Center</TextAlign>
+                                                </Style>
+                                              </Paragraph>
+                                            </Paragraphs>
+                                            <rd:DefaultName>VHCILItem_Comment</rd:DefaultName>
+                                            <Style>
+                                              <Border>
+                                                <Style>Solid</Style>
+                                              </Border>
+                                              <VerticalAlign>Middle</VerticalAlign>
+                                              <PaddingLeft>2pt</PaddingLeft>
+                                              <PaddingRight>2pt</PaddingRight>
+                                              <PaddingTop>2pt</PaddingTop>
+                                              <PaddingBottom>2pt</PaddingBottom>
+                                            </Style>
+                                          </Textbox>
+                                        </CellContents>
+                                      </TablixCell>
                                     </TablixCells>
                                   </TablixRow>
                                   <TablixRow>
@@ -606,12 +679,49 @@
                                           </Textbox>
                                         </CellContents>
                                       </TablixCell>
+                                      <TablixCell>
+                                        <CellContents>
+                                          <Textbox Name="Textbox4">
+                                            <CanGrow>true</CanGrow>
+                                            <KeepTogether>true</KeepTogether>
+                                            <Paragraphs>
+                                              <Paragraph>
+                                                <TextRuns>
+                                                  <TextRun>
+                                                    <Value>=Fields!VHCILItem_Comment.Value</Value>
+                                                    <Style>
+                                                      <FontSize>16pt</FontSize>
+                                                      <FontWeight>Bold</FontWeight>
+                                                      <Color>=Switch(Fields!VHCILItem_Replace.Value=true,First(Fields!Color_Replace.Value, "DataSet_Result"),Fields!VHCILItem_Attention.Value=true,First(Fields!Color_Attention.Value, "DataSet_Result"),Fields!VHCILItem_OK.Value=true,First(Fields!Color_OK.Value, "DataSet_Result"),Fields!VHCILItem_New.Value=true,First(Fields!Color_New.Value, "DataSet_Result"))</Color>
+                                                    </Style>
+                                                  </TextRun>
+                                                </TextRuns>
+                                                <Style>
+                                                  <TextAlign>Center</TextAlign>
+                                                </Style>
+                                              </Paragraph>
+                                            </Paragraphs>
+                                            <rd:DefaultName>Textbox4</rd:DefaultName>
+                                            <Style>
+                                              <Border>
+                                                <Style>Solid</Style>
+                                              </Border>
+                                              <VerticalAlign>Middle</VerticalAlign>
+                                              <PaddingLeft>2pt</PaddingLeft>
+                                              <PaddingRight>2pt</PaddingRight>
+                                              <PaddingTop>2pt</PaddingTop>
+                                              <PaddingBottom>2pt</PaddingBottom>
+                                            </Style>
+                                          </Textbox>
+                                        </CellContents>
+                                      </TablixCell>
                                     </TablixCells>
                                   </TablixRow>
                                 </TablixRows>
                               </TablixBody>
                               <TablixColumnHierarchy>
                                 <TablixMembers>
+                                  <TablixMember />
                                   <TablixMember />
                                   <TablixMember />
                                   <TablixMember />
@@ -643,10 +753,11 @@
                                   </TablixMember>
                                 </TablixMembers>
                               </TablixRowHierarchy>
+                              <DataSetName>DataSet_Result</DataSetName>
                               <Top>0.0985cm</Top>
                               <Left>0.1cm</Left>
                               <Height>0.99247in</Height>
-                              <Width>7.00647in</Width>
+                              <Width>7.00646in</Width>
                               <Style>
                                 <Border>
                                   <Style>Double</Style>
@@ -1768,6 +1879,9 @@ End Function
         </Field>
         <Field Name="VHCILItem_New">
           <DataField>VHCILItem_New</DataField>
+        </Field>
+        <Field Name="VHCILItem_Comment">
+          <DataField>VHCILItem_Comment</DataField>
         </Field>
         <Field Name="VHCILItem_TyreStatus">
           <DataField>VHCILItem_TyreStatus</DataField>

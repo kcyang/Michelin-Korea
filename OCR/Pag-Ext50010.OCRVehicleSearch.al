@@ -82,7 +82,7 @@ pageextension 50010 OCRVehicleSearch extends "Cust Contact Vehicle Creation"
                     FileManagement: Codeunit "File Management";
                     FileName: Text;
                     ClientFileName: Text;
-                    extTempVehicle: Record Vehicle;
+                    extTempVehicle: Record Vehicle temporary;
                     imageRec: Record Vehicle;
                 begin
                     GetVehicleInfo(extTempVehicle);

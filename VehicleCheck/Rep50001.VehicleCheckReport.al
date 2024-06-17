@@ -148,6 +148,7 @@ report 50001 "Vehicle Check Report-MK"
                 column(VHCILItem_Attention; VHCILItem.Attention) { }
                 column(VHCILItem_OK; VHCILItem.Ok) { }
                 column(VHCILItem_New; VHCILItem.New) { }
+                column(VHCILItem_Comment; VHCILItem.Comment) { }
                 column(VHCILItem_TyreStatus; TyreStatusG) { }
                 column(VHCILItem_CheckNotes; CheckNotesG) { }
                 column(VHCILItem_Recommandation; CheckRecommandationG) { }
@@ -157,6 +158,7 @@ report 50001 "Vehicle Check Report-MK"
                 column(VHCILItem_NewValue; NewValueG) { }
                 column(SummaryNotesReplaceTxt; ReplaceNotesG) { }
                 column(SummaryNotesAttentionTxt; AttentionNotesG) { }
+
                 trigger OnPreDataItem()
                 begin
                 end;
@@ -189,11 +191,26 @@ report 50001 "Vehicle Check Report-MK"
                     if VHCILItem."Exact Status" = 0 then
                         TyreStatusG := '';
 
+
+
+                    //MK CUSTOMIZATION
+                    if VHCILItem."Checkpoint Type" = VHCILItem."Checkpoint Type"::Tyre then begin
+                        if (ValueL = 2) or (ValueL = 3) or (ValueL = 4) then
+                            AttentionValueG := '√'
+                        else
+                            AttentionValueG := '';
+                        if VHCILItem.New = true then
+                            OkValueG := '√'
+                        else
+                            OkValueG := '';
+                    end;
+
                     //Notes
                     ReplaceNotesG := '';
                     AttentionNotesG := '';
                     CheckNotesG := '';
                     CheckRecommandationG := '';
+
                     VehicleCheckFindingTypeL.Reset();
                     VehicleCheckFindingTypeL.SetRange("Document Type", VHCILItem."Document Type");
                     VehicleCheckFindingTypeL.SetRange("Document No.", VHCILItem."Document No.");
@@ -218,9 +235,9 @@ report 50001 "Vehicle Check Report-MK"
                     VehicleCheckSolutionL.SetRange(Select, true);
                     if VehicleCheckSolutionL.FindSet() then begin
                         if VHCILItem.Replace then
-                            ReplaceNotesG := VHCILItem.Description + ': ';
+                            ReplaceNotesG := VHCILItem."Description 2" + ': ';
                         if VHCILItem.Attention then
-                            AttentionNotesG := VHCILItem.Description + ': ';
+                            AttentionNotesG := VHCILItem."Description 2" + ': ';
                         repeat
                             CheckRecommandationG := CheckRecommandationG + ' ' + VehicleCheckSolutionL.Description;
                             if VHCILItem.Replace then
