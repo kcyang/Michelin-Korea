@@ -21,7 +21,7 @@ codeunit 50010 "Ext Integration"
         respText: Text;
         mkrutil: DotNet mkrutil;
     //VehicleTemp: Record Vehicle temporary;
-    procedure Get_OCR_Text(jsonText: Text; var VehicleP: Record Vehicle temporary)
+    procedure Get_OCR_Text(jsonText: Text; VehicleNoP: Code[20]; var VehicleTempP: Record Vehicle temporary)
     var
         jsonObj: JsonObject;
         jsonToken: JsonToken;
@@ -47,6 +47,8 @@ codeunit 50010 "Ext Integration"
         RegistDateDT: Date;
         RegistDateList: List of [Text];
         RegistListCnt: Integer;
+        VehicleP: Record Vehicle temporary;
+        VehicleL: Record Vehicle;
 
         VehicleConfirmPage: Page "OCR Vehicle InformationConfirm";
     begin
@@ -133,29 +135,86 @@ codeunit 50010 "Ext Integration"
                                 listFields.Get(indexofText + 1, SpecL);
                                 listFields.Get(indexofText + 2, ModelYearL);
                             end;
+                            /*
+                                                        if VehicleP.Get() then begin
+                                                            if VehicleP."Vehicle Identification No." = VINNoTextL then begin
+                                                                VehicleP."Licence-Plate No." := VehicleLicenseNoL;
+                                                                VehicleP."National Code" := SpecL;
+                                                                VehicleP.Year := ModelYearL;
+                                                                VehicleP."Registration Date" := RegistDateDT;
+                                                                VehicleP.Modify();
+                                                            end else begin
+                                                                VehicleP."Vehicle Identification No." := VINNoTextL;
+                                                                VehicleP."Licence-Plate No." := VehicleLicenseNoL;
+                                                                VehicleP."National Code" := SpecL;
+                                                                VehicleP.Year := ModelYearL;
+                                                                VehicleP."Registration Date" := RegistDateDT;
+                                                                VehicleP.Modify();
+                                                            end;
+                                                        end;
+                            */
+                            VehicleP.Init();
+                            VehicleP."Vehicle No." := VehicleNoP;
+                            VehicleP.Insert();
+                            if VehicleP.Get(VehicleNoP) then begin
+                                VehicleP."Vehicle Identification No." := VINNoTextL;
+                                VehicleP."Licence-Plate No." := VehicleLicenseNoL;
+                                VehicleP."National Code" := SpecL;
+                                VehicleP.Year := ModelYearL;
+                                VehicleP."Registration Date" := RegistDateDT;
+                                VehicleP.Modify();
+                                Commit();
+                                if Page.RunModal(50012, VehicleP) = Action::LookupOK then begin
+                                    if VehicleL.Get(VehicleNoP) then begin //find the real record.
+                                        if (VehicleL."Vehicle Identification No." <> '') AND (VehicleL."Vehicle Identification No." <> VehicleP."Vehicle Identification No.") then begin
+                                            if Confirm('조회된 VIN 번호가 차량카드의 VIN 번호와 다릅니다.그래도 업데이트 할까요?', true, 'OK', 'Cancel') then begin
+                                                VehicleL."Vehicle Identification No." := VehicleP."Vehicle Identification No.";
+                                            end;
+                                        end else begin
+                                            VehicleL."Vehicle Identification No." := VehicleP."Vehicle Identification No.";
+                                        end;
+                                        if (VehicleL."Licence-Plate No." <> '') AND (VehicleL."Licence-Plate No." <> VehicleP."Licence-Plate No.") then begin
+                                            if Confirm('조회된 차량번호가 차량카드의 차량 번호와 다릅니다.그래도 업데이트 할까요?', true, 'OK', 'Cancel') then begin
+                                                VehicleL."Licence-Plate No." := VehicleP."Licence-Plate No.";
+                                            end;
+                                        end else begin
+                                            VehicleL."Licence-Plate No." := VehicleP."Licence-Plate No.";
+                                        end;
+                                        if (VehicleL."National Code" <> '') AND (VehicleL."National Code" <> VehicleP."National Code") then begin
+                                            if Confirm('조회된 국가코드가 차량카드의 국가코드와 다릅니다.그래도 업데이트 할까요?', true, 'OK', 'Cancel') then begin
+                                                VehicleL."National Code" := VehicleP."National Code";
+                                            end;
+                                        end else begin
+                                            VehicleL."National Code" := VehicleP."National Code";
+                                        end;
+                                        if (VehicleL.Year <> '') AND (VehicleL.Year <> VehicleP.Year) then begin
+                                            if Confirm('조회된 모델년도가 차량카드의 모델년도와 다릅니다.그래도 업데이트 할까요?', true, 'OK', 'Cancel') then begin
+                                                VehicleL.Year := VehicleP.Year;
+                                            end;
+                                        end else begin
+                                            VehicleL.Year := VehicleP.Year;
+                                        end;
+                                        if (VehicleL."Registration Date" <> 0D) AND (VehicleL."Registration Date" <> VehicleP."Registration Date") then begin
+                                            if Confirm('조회된 차량등록일이 차량카드의 차량등록일과 다릅니다.그래도 업데이트 할까요?', true, 'OK', 'Cancel') then begin
+                                                VehicleL."Registration Date" := VehicleP."Registration Date";
+                                            end;
+                                        end else begin
+                                            VehicleL."Registration Date" := VehicleP."Registration Date";
+                                        end;
 
-                            if VehicleP.FindSet() then begin
-                                if VehicleP."Vehicle Identification No." = VINNoTextL then begin
-                                    VehicleP."Licence-Plate No." := VehicleLicenseNoL;
-                                    VehicleP."National Code" := SpecL;
-                                    VehicleP.Year := ModelYearL;
-                                    VehicleP."Registration Date" := RegistDateDT;
-                                    VehicleP.Modify();
-                                end else begin
-                                    VehicleP."Vehicle Identification No." := VINNoTextL;
-                                    VehicleP."Licence-Plate No." := VehicleLicenseNoL;
-                                    VehicleP."National Code" := SpecL;
-                                    VehicleP.Year := ModelYearL;
-                                    VehicleP."Registration Date" := RegistDateDT;
-                                    VehicleP.Modify();
+                                        vehicleL.Modify();
+                                    end else begin
+                                        if VehicleTempP.Get(VehicleNoP) then begin //find in the temp.
+                                            VehicleTempP."Vehicle Identification No." := VINNoTextL;
+                                            VehicleTempP."Licence-Plate No." := VehicleLicenseNoL;
+                                            VehicleTempP."National Code" := SpecL;
+                                            VehicleTempP.Year := ModelYearL;
+                                            VehicleTempP."Registration Date" := RegistDateDT;
+                                            VehicleTempP.Modify();
+                                        end;
+                                    end;
                                 end;
                             end;
-
-                            VehicleConfirmPage.SetRecord(VehicleP);
-                            VehicleConfirmPage.Run();
-
-                            //Message('최초등록일==>[%5]\nVIN==>[%1]\n차량번호==>[%2]\n형식==>[%3]\n모델연도==>[%4]', VINNoTextL, VehicleLicenseNoL, SpecL, ModelYearL, RegistDateDT);
-
                         end;
                     end;
                 end;
@@ -473,7 +532,7 @@ codeunit 50010 "Ext Integration"
             end;
             */
             if respText <> '' then begin
-                Get_OCR_Text(respText, vehicleG);
+                Get_OCR_Text(respText, vehicleG."Vehicle No.", vehicleG);
                 ocrlog.Status := 'Success';
             end else begin
                 ocrlog.Status := 'Error';

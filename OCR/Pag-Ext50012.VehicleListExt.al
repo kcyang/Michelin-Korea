@@ -127,6 +127,7 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
                     if Rec."Vehicle Registration Card".HasValue then begin
                         VehicleG.Copy(Rec);
                         SendOCR.Send_OCR(VehicleG);
+                        CurrPage.Update();
                     end;
                 end;
             }

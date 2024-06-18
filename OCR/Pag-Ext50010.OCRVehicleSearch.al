@@ -12,29 +12,24 @@ pageextension 50010 OCRVehicleSearch extends "Cust Contact Vehicle Creation"
     {
         addfirst("TecRMI Vehicle Catalog")
         {
-            /*
-            //TODO 이미 조회한 등록정보를 재확인할 수 있는 화면.
+
             action("ConfirmVehicleReg")
             {
                 ApplicationArea = All;
-                CaptionML = ENU = 'Check Veh.Reg.', KOR = '차량등록정보 확인';
-                Image = AdministrationSalesPurchases;
+                CaptionML = ENU = 'Confirm Vehicle Info.', KOR = '차량등록 정보확인';
                 Promoted = true;
                 PromotedCategory = Process;
                 PromotedIsBig = true;
-
+                Image = CheckRulesSyntax;
                 trigger OnAction()
                 var
+                    specInforpageL: page "OCR Vehicle InformationConfirm";
                     extTempVehicle: Record Vehicle temporary;
-                    specInfoL: Page "OCR Vehicle InformationConfirm";
                 begin
                     GetVehicleInfo(extTempVehicle);
                     Page.Run(50012, extTempVehicle);
-
-                    // SetVehicleInfo(extTempVehicle);
                 end;
             }
-            */
             action("OCR Search")
             {
                 ApplicationArea = All;
@@ -56,16 +51,7 @@ pageextension 50010 OCRVehicleSearch extends "Cust Contact Vehicle Creation"
                     if IsSuccess then begin
                         SendOCR.Send_OCR(extTempVehicle);
                     end;
-
                     SetVehicleInfo(extTempVehicle);
-                    // imageRec.Reset();
-                    // imageRec.SetRange("Vehicle No.", extTempVehicle."Vehicle No.");
-                    // imageRec.SetFilter("Vehicle Identification No.", '%1', extTempVehicle."Vehicle Identification No.");
-
-                    // if imageRec.FindSet() then begin
-                    //     imageRec."Vehicle Registration Card" := extTempVehicle."Vehicle Registration Card";
-                    //     imageRec.Modify();
-                    // end;
                 end;
             }
             action("Import Veh.Reg.Card")
@@ -83,7 +69,6 @@ pageextension 50010 OCRVehicleSearch extends "Cust Contact Vehicle Creation"
                     FileName: Text;
                     ClientFileName: Text;
                     extTempVehicle: Record Vehicle temporary;
-                    imageRec: Record Vehicle;
                 begin
                     GetVehicleInfo(extTempVehicle);
 
@@ -107,16 +92,6 @@ pageextension 50010 OCRVehicleSearch extends "Cust Contact Vehicle Creation"
                         SendOCR.Send_OCR(extTempVehicle);
                     end;
                     SetVehicleInfo(extTempVehicle);
-
-                    // imageRec.Reset();
-                    // imageRec.SetRange("Vehicle No.", extTempVehicle."Vehicle No.");
-                    // imageRec.SetFilter("Vehicle Identification No.", '%1', extTempVehicle."Vehicle Identification No.");
-
-                    // if imageRec.FindSet() then begin
-                    //     imageRec."Vehicle Registration Card" := extTempVehicle."Vehicle Registration Card";
-                    //     imageRec.Modify();
-                    // end;
-
                 end;
             }
             /*
@@ -178,6 +153,7 @@ pageextension 50010 OCRVehicleSearch extends "Cust Contact Vehicle Creation"
                 end;
             }
             */
+            /*
             action(ShowPZ)
             {
                 ApplicationArea = All;
@@ -204,6 +180,7 @@ pageextension 50010 OCRVehicleSearch extends "Cust Contact Vehicle Creation"
                     end;
                 end;
             }
+            */
 
         }
 

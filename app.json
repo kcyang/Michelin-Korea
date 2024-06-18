@@ -13,7 +13,7 @@
   "logo": "incadea.png",
   "dependencies": [{"id": "7f4856b1-a9ab-46d5-bdc1-68477be92b2f","name": "VehicleCheckExpand", 
   "publisher": "Incadea China", 
-  "version": "1.0.202454.1"},{"id": "54ec6f90-352b-466a-accd-c9effcc0de65","name": "VehicleCheck", 
+  "version": "1.0.202405.1"},{"id": "54ec6f90-352b-466a-accd-c9effcc0de65","name": "VehicleCheck", 
   "publisher": "incadea GmbH", 
   "version": "1.1.0.16653"}],
   "screenshots": [],
