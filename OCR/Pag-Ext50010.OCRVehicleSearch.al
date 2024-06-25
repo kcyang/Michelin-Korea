@@ -50,6 +50,7 @@ pageextension 50010 OCRVehicleSearch extends "Cust Contact Vehicle Creation"
                     IsSuccess := Camera.AddPicture(extTempVehicle, extTempVehicle.FieldNo("Vehicle Registration Card"));
                     if IsSuccess then begin
                         SendOCR.Send_OCR(extTempVehicle);
+                        CurrPage.Update();
                     end;
                     SetVehicleInfo(extTempVehicle);
                 end;
@@ -90,6 +91,7 @@ pageextension 50010 OCRVehicleSearch extends "Cust Contact Vehicle Creation"
                     //Send the image file.
                     if extTempVehicle."Vehicle Registration Card".HasValue then begin
                         SendOCR.Send_OCR(extTempVehicle);
+                        CurrPage.Update();
                     end;
                     SetVehicleInfo(extTempVehicle);
                 end;

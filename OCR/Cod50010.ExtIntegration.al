@@ -202,6 +202,48 @@ codeunit 50010 "Ext Integration"
                                             VehicleL."Registration Date" := VehicleP."Registration Date";
                                         end;
 
+                                        if (VehicleL."Vehicle Manufacturer" <> '') AND (VehicleL."Vehicle Manufacturer" <> VehicleP."Vehicle Manufacturer") then begin
+                                            if Confirm('조회된 차량제조사가 차량카드의 차량제조사와 다릅니다.그래도 업데이트 할까요?', true, 'OK', 'Cancel') then begin
+                                                VehicleL."Vehicle Manufacturer" := VehicleP."Vehicle Manufacturer";
+                                            end;
+                                        end else begin
+                                            VehicleL."Vehicle Manufacturer" := VehicleP."Vehicle Manufacturer";
+                                        end;
+                                        if (VehicleL."Vehicle Model" <> '') AND (VehicleL."Vehicle Model" <> VehicleP."Vehicle Model") then begin
+                                            if Confirm('조회된 차량모델이 차량카드의 차량모델과 다릅니다.그래도 업데이트 할까요?', true, 'OK', 'Cancel') then begin
+                                                VehicleL."Vehicle Model" := VehicleP."Vehicle Model";
+                                            end;
+                                        end else begin
+                                            VehicleL."Vehicle Model" := VehicleP."Vehicle Model";
+                                        end;
+                                        if (VehicleL."Vehicle Variant" <> '') AND (VehicleL."Vehicle Variant" <> VehicleP."Vehicle Variant") then begin
+                                            if Confirm('조회된 차량유형이 차량카드의 차량유형과 다릅니다.그래도 업데이트 할까요?', true, 'OK', 'Cancel') then begin
+                                                VehicleL."Vehicle Variant" := VehicleP."Vehicle Variant";
+                                            end;
+                                        end else begin
+                                            VehicleL."Vehicle Variant" := VehicleP."Vehicle Variant";
+                                        end;
+                                        if (VehicleL."Body Type" <> '') AND (VehicleL."Body Type" <> VehicleP."Body Type") then begin
+                                            if Confirm('조회된 차량바디유형이 차량카드의 차량바디유형과 다릅니다.그래도 업데이트 할까요?', true, 'OK', 'Cancel') then begin
+                                                VehicleL."Body Type" := VehicleP."Body Type";
+                                            end;
+                                        end else begin
+                                            VehicleL."Body Type" := VehicleP."Body Type";
+                                        end;
+                                        if (VehicleL."Engine No. (Type)" <> '') AND (VehicleL."Engine No. (Type)" <> VehicleP."Engine No. (Type)") then begin
+                                            if Confirm('조회된 차량엔진이 차량카드의 차량엔진과 다릅니다.그래도 업데이트 할까요?', true, 'OK', 'Cancel') then begin
+                                                VehicleL."Engine No. (Type)" := VehicleP."Engine No. (Type)";
+                                            end;
+                                        end else begin
+                                            VehicleL."Engine No. (Type)" := VehicleP."Engine No. (Type)";
+                                        end;
+                                        if (VehicleL.Fuel <> '') AND (VehicleL.Fuel <> VehicleP.Fuel) then begin
+                                            if Confirm('조회된 차량연료방식이 차량카드의 차량연료방식과 다릅니다.그래도 업데이트 할까요?', true, 'OK', 'Cancel') then begin
+                                                VehicleL.Fuel := VehicleP.Fuel;
+                                            end;
+                                        end else begin
+                                            VehicleL.Fuel := VehicleP.Fuel;
+                                        end;
                                         vehicleL.Modify();
                                     end else begin
                                         if VehicleTempP.Get(VehicleNoP) then begin //find in the temp.
@@ -210,6 +252,14 @@ codeunit 50010 "Ext Integration"
                                             VehicleTempP."National Code" := SpecL;
                                             VehicleTempP.Year := ModelYearL;
                                             VehicleTempP."Registration Date" := RegistDateDT;
+                                            // Message('Model Year = %1, Reg. Date = %2', ModelYearL, RegistDateDT);
+                                            VehicleTempP."Vehicle Manufacturer" := VehicleP."Vehicle Manufacturer";
+                                            VehicleTempP."Vehicle Model" := VehicleP."Vehicle Model";
+                                            VehicleTempP."Vehicle Variant" := VehicleP."Vehicle Variant";
+                                            VehicleTempP."Body Type" := VehicleP."Body Type";
+                                            VehicleTempP."Engine No. (Type)" := VehicleP."Engine No. (Type)";
+                                            VehicleTempP.Fuel := VehicleP.Fuel;
+
                                             VehicleTempP.Modify();
                                         end;
                                     end;
