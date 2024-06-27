@@ -93,6 +93,7 @@ pageextension 50010 OCRVehicleSearch extends "Cust Contact Vehicle Creation"
                         SendOCR.Send_OCR(extTempVehicle);
                         CurrPage.Update();
                     end;
+                    Message('모델년도 %1 / 차량등록일 %2', extTempVehicle.Year, extTempVehicle."Registration Date");
                     SetVehicleInfo(extTempVehicle);
                 end;
             }
@@ -188,6 +189,17 @@ pageextension 50010 OCRVehicleSearch extends "Cust Contact Vehicle Creation"
 
     }
 
+    // To Add the function for additional fields update of extend page.
+    // procedure setAdditionalVehicleInfo(VehicleP: Record Vehicle)
+    // begin
+    //     VehicleYear := VehicleP.Year;
+    //     TempVehicle.Validate(Year, VehicleYear);
+    //     VehicleRegDate := VehicleP."Registration Date";
+    //     TempVehicle.Validate("Registration Date", VehicleRegDate);
+
+    //     CurrPage.Update();
+    // end;
+
     var
         //TempVehicle: Record Vehicle temporary;
         Camera: Codeunit Camera;
@@ -199,4 +211,5 @@ pageextension 50010 OCRVehicleSearch extends "Cust Contact Vehicle Creation"
         DeleteExportEnabled: Boolean;
         VehicleG: Record Vehicle temporary;
         SendOCR: Codeunit "Ext Integration";
+
 }

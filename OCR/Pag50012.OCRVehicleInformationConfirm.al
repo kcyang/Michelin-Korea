@@ -142,7 +142,6 @@ page 50012 "OCR Vehicle InformationConfirm"
         }
     }
 
-
     procedure setVehicleRecord(VehicleP: Record Vehicle temporary)
     begin
         Rec := VehicleP;

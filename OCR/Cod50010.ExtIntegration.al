@@ -50,7 +50,7 @@ codeunit 50010 "Ext Integration"
         VehicleP: Record Vehicle temporary;
         VehicleL: Record Vehicle;
 
-        VehicleConfirmPage: Page "OCR Vehicle InformationConfirm";
+        VehicleConfirmPage: Page "Cust Contact Vehicle Creation";
     begin
 
         if jsonText = '' then
@@ -135,24 +135,7 @@ codeunit 50010 "Ext Integration"
                                 listFields.Get(indexofText + 1, SpecL);
                                 listFields.Get(indexofText + 2, ModelYearL);
                             end;
-                            /*
-                                                        if VehicleP.Get() then begin
-                                                            if VehicleP."Vehicle Identification No." = VINNoTextL then begin
-                                                                VehicleP."Licence-Plate No." := VehicleLicenseNoL;
-                                                                VehicleP."National Code" := SpecL;
-                                                                VehicleP.Year := ModelYearL;
-                                                                VehicleP."Registration Date" := RegistDateDT;
-                                                                VehicleP.Modify();
-                                                            end else begin
-                                                                VehicleP."Vehicle Identification No." := VINNoTextL;
-                                                                VehicleP."Licence-Plate No." := VehicleLicenseNoL;
-                                                                VehicleP."National Code" := SpecL;
-                                                                VehicleP.Year := ModelYearL;
-                                                                VehicleP."Registration Date" := RegistDateDT;
-                                                                VehicleP.Modify();
-                                                            end;
-                                                        end;
-                            */
+
                             VehicleP.Init();
                             VehicleP."Vehicle No." := VehicleNoP;
                             VehicleP.Insert();
@@ -246,22 +229,21 @@ codeunit 50010 "Ext Integration"
                                         end;
                                         vehicleL.Modify();
                                     end else begin
-                                        if VehicleTempP.Get(VehicleNoP) then begin //find in the temp.
-                                            VehicleTempP."Vehicle Identification No." := VINNoTextL;
-                                            VehicleTempP."Licence-Plate No." := VehicleLicenseNoL;
-                                            VehicleTempP."National Code" := SpecL;
-                                            VehicleTempP.Year := ModelYearL;
-                                            VehicleTempP."Registration Date" := RegistDateDT;
-                                            // Message('Model Year = %1, Reg. Date = %2', ModelYearL, RegistDateDT);
-                                            VehicleTempP."Vehicle Manufacturer" := VehicleP."Vehicle Manufacturer";
-                                            VehicleTempP."Vehicle Model" := VehicleP."Vehicle Model";
-                                            VehicleTempP."Vehicle Variant" := VehicleP."Vehicle Variant";
-                                            VehicleTempP."Body Type" := VehicleP."Body Type";
-                                            VehicleTempP."Engine No. (Type)" := VehicleP."Engine No. (Type)";
-                                            VehicleTempP.Fuel := VehicleP.Fuel;
+                                        //if VehicleTempP.Get(VehicleNoP) then begin //find in the temp.
+                                        VehicleTempP."Vehicle Identification No." := VINNoTextL;
+                                        VehicleTempP."Licence-Plate No." := VehicleLicenseNoL;
+                                        VehicleTempP."National Code" := SpecL;
+                                        VehicleTempP.Year := ModelYearL;
+                                        VehicleTempP."Registration Date" := RegistDateDT;
+                                        VehicleTempP."Vehicle Manufacturer" := VehicleP."Vehicle Manufacturer";
+                                        VehicleTempP."Vehicle Model" := VehicleP."Vehicle Model";
+                                        VehicleTempP."Vehicle Variant" := VehicleP."Vehicle Variant";
+                                        VehicleTempP."Body Type" := VehicleP."Body Type";
+                                        VehicleTempP."Engine No. (Type)" := VehicleP."Engine No. (Type)";
+                                        VehicleTempP.Fuel := VehicleP.Fuel;
 
-                                            VehicleTempP.Modify();
-                                        end;
+                                        VehicleTempP.Modify();
+                                        //end;
                                     end;
                                 end;
                             end;
@@ -500,7 +482,7 @@ codeunit 50010 "Ext Integration"
         end;
     end;
 
-    procedure Send_OCR(var vehicleG: Record Vehicle temporary)
+    procedure Send_OCR(var vehicleG: Record Vehicle)
     var
         base64string: Text;
         regcardname: Text;
