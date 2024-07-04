@@ -255,6 +255,186 @@ codeunit 50010 "Ext Integration"
 
     end;
 
+    procedure Get_VIN_OCR_Text(jsonText: Text; VehicleNoP: Code[20]; var VehicleTempP: Record Vehicle temporary)
+    var
+        jsonObj: JsonObject;
+        jsonToken: JsonToken;
+        jsonToken_ImagesL: JsonToken;
+        jsonToken_FieldsL: JsonToken;
+        jsonToken_eachField: JsonToken;
+        jsonToken_inferText: JsonToken;
+        jsonArray_FieldsL: JsonArray;
+        jsonArrayL: JsonArray;
+        indexofText: Integer;
+
+        listFields: List of [Text];
+        VINNoTextL: Text;
+        VehicleLicenseNoL: Text;
+        ModelYearL: Text;
+        SpecL: Text;
+        RegistDate: Text;
+        tempRegist: Text;
+        I: Integer;
+        YearIdx: Integer;
+        MontIdx: Integer;
+        DayIdx: Integer;
+        RegistDateDT: Date;
+        RegistDateList: List of [Text];
+        RegistListCnt: Integer;
+        VehicleP: Record Vehicle temporary;
+        VehicleL: Record Vehicle;
+
+        VehicleConfirmPage: Page "Cust Contact Vehicle Creation";
+    begin
+
+        if jsonText = '' then
+            Error('There is no text parameter');
+
+        if not jsonObj.ReadFrom(jsonText) then
+            Error('JSON Parsing Error');
+
+        if jsonObj.Get('images', jsonToken) then begin
+            //image array 토큰을 받아서,
+            if jsonToken.IsArray then begin
+                jsonArrayL := jsonToken.AsArray();
+                //그 array 에서, 0번째 가져온 다음에,
+                if jsonArrayL.Get(0, jsonToken_ImagesL) then begin
+                    if jsonToken_ImagesL.IsObject then begin
+                        jsonToken_ImagesL.AsObject().Get('fields', jsonToken_FieldsL);
+                        if jsonToken_FieldsL.IsArray then begin
+                            jsonArray_FieldsL := jsonToken_FieldsL.AsArray();
+                            foreach jsonToken_eachField in jsonArray_FieldsL do begin
+                                if jsonToken_eachField.IsObject then begin
+                                    jsonToken_eachField.AsObject().Get('inferText', jsonToken_inferText);
+                                    if jsonToken_inferText.IsValue then
+                                        listFields.Add(DelChr(jsonToken_inferText.AsValue().AsText(), '='));
+                                end;
+                            end;
+                            indexofText := 0;
+                            //6차대번호 다음 1개
+                            indexofText := listFields.IndexOf('차대번호:');
+                            if indexofText = 0 then begin
+                                indexofText := listFields.IndexOf('호:')
+                            end;
+                            if indexofText = 0 then begin
+                                indexofText := listFields.IndexOf('번호:')
+                            end;
+                            if indexofText = 0 then begin
+                                indexofText := listFields.IndexOf('대번호:')
+                            end;
+                            if indexofText <> 0 then
+                                listFields.Get(indexofText + 1, VINNoTextL);
+
+                            VehicleP.Init();
+                            VehicleP."Vehicle No." := VehicleNoP;
+                            VehicleP.Insert();
+                            if VehicleP.Get(VehicleNoP) then begin
+                                VehicleP."Vehicle Identification No." := VINNoTextL;
+                                VehicleP.Modify();
+                                Commit();
+                                if Page.RunModal(50012, VehicleP) = Action::LookupOK then begin
+                                    if VehicleL.Get(VehicleNoP) then begin //find the real record.
+                                        if (VehicleL."Vehicle Identification No." <> '') AND (VehicleL."Vehicle Identification No." <> VehicleP."Vehicle Identification No.") then begin
+                                            if Confirm('조회된 VIN 번호가 차량카드의 VIN 번호와 다릅니다.그래도 업데이트 할까요?', true, 'OK', 'Cancel') then begin
+                                                VehicleL."Vehicle Identification No." := VehicleP."Vehicle Identification No.";
+                                            end;
+                                        end else begin
+                                            VehicleL."Vehicle Identification No." := VehicleP."Vehicle Identification No.";
+                                        end;
+                                        if (VehicleL."Licence-Plate No." <> '') AND (VehicleL."Licence-Plate No." <> VehicleP."Licence-Plate No.") then begin
+                                            if Confirm('조회된 차량번호가 차량카드의 차량 번호와 다릅니다.그래도 업데이트 할까요?', true, 'OK', 'Cancel') then begin
+                                                VehicleL."Licence-Plate No." := VehicleP."Licence-Plate No.";
+                                            end;
+                                        end else begin
+                                            VehicleL."Licence-Plate No." := VehicleP."Licence-Plate No.";
+                                        end;
+                                        if (VehicleL."National Code" <> '') AND (VehicleL."National Code" <> VehicleP."National Code") then begin
+                                            if Confirm('조회된 국가코드가 차량카드의 국가코드와 다릅니다.그래도 업데이트 할까요?', true, 'OK', 'Cancel') then begin
+                                                VehicleL."National Code" := VehicleP."National Code";
+                                            end;
+                                        end else begin
+                                            VehicleL."National Code" := VehicleP."National Code";
+                                        end;
+                                        if (VehicleL.Year <> '') AND (VehicleL.Year <> VehicleP.Year) then begin
+                                            if Confirm('조회된 모델년도가 차량카드의 모델년도와 다릅니다.그래도 업데이트 할까요?', true, 'OK', 'Cancel') then begin
+                                                VehicleL.Year := VehicleP.Year;
+                                            end;
+                                        end else begin
+                                            VehicleL.Year := VehicleP.Year;
+                                        end;
+                                        if (VehicleL."Registration Date" <> 0D) AND (VehicleL."Registration Date" <> VehicleP."Registration Date") then begin
+                                            if Confirm('조회된 차량등록일이 차량카드의 차량등록일과 다릅니다.그래도 업데이트 할까요?', true, 'OK', 'Cancel') then begin
+                                                VehicleL."Registration Date" := VehicleP."Registration Date";
+                                            end;
+                                        end else begin
+                                            VehicleL."Registration Date" := VehicleP."Registration Date";
+                                        end;
+
+                                        if (VehicleL."Vehicle Manufacturer" <> '') AND (VehicleL."Vehicle Manufacturer" <> VehicleP."Vehicle Manufacturer") then begin
+                                            if Confirm('조회된 차량제조사가 차량카드의 차량제조사와 다릅니다.그래도 업데이트 할까요?', true, 'OK', 'Cancel') then begin
+                                                VehicleL."Vehicle Manufacturer" := VehicleP."Vehicle Manufacturer";
+                                            end;
+                                        end else begin
+                                            VehicleL."Vehicle Manufacturer" := VehicleP."Vehicle Manufacturer";
+                                        end;
+                                        if (VehicleL."Vehicle Model" <> '') AND (VehicleL."Vehicle Model" <> VehicleP."Vehicle Model") then begin
+                                            if Confirm('조회된 차량모델이 차량카드의 차량모델과 다릅니다.그래도 업데이트 할까요?', true, 'OK', 'Cancel') then begin
+                                                VehicleL."Vehicle Model" := VehicleP."Vehicle Model";
+                                            end;
+                                        end else begin
+                                            VehicleL."Vehicle Model" := VehicleP."Vehicle Model";
+                                        end;
+                                        if (VehicleL."Vehicle Variant" <> '') AND (VehicleL."Vehicle Variant" <> VehicleP."Vehicle Variant") then begin
+                                            if Confirm('조회된 차량유형이 차량카드의 차량유형과 다릅니다.그래도 업데이트 할까요?', true, 'OK', 'Cancel') then begin
+                                                VehicleL."Vehicle Variant" := VehicleP."Vehicle Variant";
+                                            end;
+                                        end else begin
+                                            VehicleL."Vehicle Variant" := VehicleP."Vehicle Variant";
+                                        end;
+                                        if (VehicleL."Body Type" <> '') AND (VehicleL."Body Type" <> VehicleP."Body Type") then begin
+                                            if Confirm('조회된 차량바디유형이 차량카드의 차량바디유형과 다릅니다.그래도 업데이트 할까요?', true, 'OK', 'Cancel') then begin
+                                                VehicleL."Body Type" := VehicleP."Body Type";
+                                            end;
+                                        end else begin
+                                            VehicleL."Body Type" := VehicleP."Body Type";
+                                        end;
+                                        if (VehicleL."Engine No. (Type)" <> '') AND (VehicleL."Engine No. (Type)" <> VehicleP."Engine No. (Type)") then begin
+                                            if Confirm('조회된 차량엔진이 차량카드의 차량엔진과 다릅니다.그래도 업데이트 할까요?', true, 'OK', 'Cancel') then begin
+                                                VehicleL."Engine No. (Type)" := VehicleP."Engine No. (Type)";
+                                            end;
+                                        end else begin
+                                            VehicleL."Engine No. (Type)" := VehicleP."Engine No. (Type)";
+                                        end;
+                                        if (VehicleL.Fuel <> '') AND (VehicleL.Fuel <> VehicleP.Fuel) then begin
+                                            if Confirm('조회된 차량연료방식이 차량카드의 차량연료방식과 다릅니다.그래도 업데이트 할까요?', true, 'OK', 'Cancel') then begin
+                                                VehicleL.Fuel := VehicleP.Fuel;
+                                            end;
+                                        end else begin
+                                            VehicleL.Fuel := VehicleP.Fuel;
+                                        end;
+                                        vehicleL.Modify();
+                                    end else begin
+                                        //if VehicleTempP.Get(VehicleNoP) then begin //find in the temp.
+                                        VehicleTempP."Vehicle Identification No." := VINNoTextL;
+                                        VehicleTempP."Vehicle Manufacturer" := VehicleP."Vehicle Manufacturer";
+                                        VehicleTempP."Vehicle Model" := VehicleP."Vehicle Model";
+                                        VehicleTempP."Vehicle Variant" := VehicleP."Vehicle Variant";
+                                        VehicleTempP."Body Type" := VehicleP."Body Type";
+                                        VehicleTempP."Engine No. (Type)" := VehicleP."Engine No. (Type)";
+                                        VehicleTempP.Fuel := VehicleP.Fuel;
+                                        VehicleTempP.Modify();
+                                        //end;
+                                    end;
+                                end;
+                            end;
+                        end;
+                    end;
+                end;
+            end;
+        end;
+
+    end;
+
     procedure Get_PZ_Detail_Text(jsonText: Text; var vehicleG: Record Vehicle temporary)
     var
         jsonObj: JsonObject;
@@ -577,6 +757,76 @@ codeunit 50010 "Ext Integration"
         end;
     end;
 
+    procedure Send_VIN_OCR(var vehicleG: Record Vehicle)
+    var
+        base64string: Text;
+        regcardname: Text;
+        ocrsetup: Record OCRWebSetup;
+        ocrlog: Record OCRLog;
+        ocrlogdatetime: DateTime;
+        sendText: BigText;
+        recvText: BigText;
+        OStream: OutStream;
+        ROStream: OutStream;
+    begin
+        ClearAll();
+        DLG.Open('이미지를 분석중입니다....');
+        if ocrsetup.Get() then begin
+            if ocrsetup."Security Key" = '' then
+                Error('Security Key is empty.');
+            if ocrsetup."Invoke URL" = '' then
+                Error('Invoke URL is empty.');
+        end;
+
+
+        if vehicleG."Vehicle Registration Card".HasValue() then begin
+
+            TempBlob.CreateOutStream(GVOS_OutputStream);
+            vehicleG."Vehicle Registration Card".ExportStream(GVOS_OutputStream);
+            regcardname := vehicleG."Vehicle No.";
+
+            TempBlob.CreateInStream(GVOS_InputStream);
+            base64string := base64Convert.ToBase64(GVOS_InputStream);
+
+            jsonBody := '{"version" : "v2"'
+                        + ',"requestId" : "' + vehicleG."Vehicle Registration Card".MediaId()
+                        + '","timestamp" : ' + FORMAT(DateTimeToUnixTimestamp(System.CurrentDateTime))
+                        + ',"images" : [{'
+                        + '"format":"png"'
+                        + ',"name":"' + vehicleG."Vehicle No."
+                        + '","data":"' + base64string
+                        + '"}]}';
+            //Message('JSON --> %1', jsonBody);
+            sendText.AddText(jsonBody);
+
+            ocrlog.Init();
+            ocrlogdatetime := CurrentDateTime;
+            ocrlog."Vehicle No." := vehicleG."Vehicle No.";
+            ocrlog.SendDateTime := ocrlogdatetime;
+            ocrlog.Insert();
+
+            ocrlog.SendText.CreateOutStream(OStream);
+            sendText.Write(OStream);
+            ocrlog.Modify();
+
+            mkrutil := mkrutil.WebServiceClient(ocrsetup."Proxy URL");
+            respText := mkrutil.CallWebService_OCR(ocrsetup."Invoke URL", jsonBody, ocrsetup."Security Key");
+
+            // Message('RESP --> %1', respText);
+            recvText.AddText(respText);
+            if respText <> '' then begin
+                Get_VIN_OCR_Text(respText, vehicleG."Vehicle No.", vehicleG); // 테스트 전까지는 암것도 하지마.
+                ocrlog.Status := 'Success';
+            end else begin
+                ocrlog.Status := 'Error';
+                Message('Error :: 서버가 응답하지 않습니다.');
+            end;
+            ocrlog.RecvText.CreateOutStream(ROStream);
+            recvText.Write(ROStream);
+            ocrlog.Modify();
+            DLG.Close();
+        end;
+    end;
 
     procedure Send_PZ(var vehicleG: Record Vehicle temporary)
     var

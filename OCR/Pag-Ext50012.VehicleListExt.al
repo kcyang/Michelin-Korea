@@ -91,6 +91,26 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
                     end;
                 end;
             }
+            action("VIN Search")
+            {
+                ApplicationArea = All;
+                CaptionML = ENU = 'Take/Search a Photo of Veh.Reg.', KOR = '차대번호 사진찍기/검색';
+                Image = AdministrationSalesPurchases;
+                Promoted = true;
+                PromotedCategory = Category6;
+                PromotedIsBig = true;
+
+                trigger OnAction()
+                var
+                    IsSuccess: Boolean;
+                begin
+                    IsSuccess := Camera.AddPicture(Rec, Rec.FieldNo("Vehicle Registration Card"));
+                    if IsSuccess then begin
+                        VehicleG.Copy(Rec);
+                        SendOCR.Send_OCR(VehicleG);
+                    end;
+                end;
+            }
             action("Veh.Reg.Card Import")
             {
                 ApplicationArea = All;
@@ -127,6 +147,46 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
                     if Rec."Vehicle Registration Card".HasValue then begin
                         VehicleG.Copy(Rec);
                         SendOCR.Send_OCR(VehicleG);
+                        CurrPage.Update();
+                    end;
+                end;
+            }
+            action("VIN Import")
+            {
+                ApplicationArea = All;
+                CaptionML = ENU = 'Import VIN Image', KOR = '차대번호 등록/가져오기';
+                Image = Import;
+                Promoted = true;
+                PromotedCategory = Category6;
+                PromotedIsBig = true;
+
+                trigger OnAction()
+                var
+                    FileManagement: Codeunit "File Management";
+                    FileName: Text;
+                    ClientFileName: Text;
+                begin
+                    Rec.TestField(Rec."Vehicle No.");
+
+                    if Rec."Vehicle Registration Card".HasValue then
+                        if not Confirm(OverrideImageQst) then
+                            exit;
+
+                    FileName := FileManagement.UploadFile(SelectPictureTxt, ClientFileName);
+                    if FileName = '' then
+                        exit;
+
+                    Clear(Rec."Vehicle Registration Card");
+                    Rec."Vehicle Registration Card".ImportFile(FileName, ClientFileName);
+                    if not Rec.Modify(true) then
+                        Rec.Insert(true);
+
+                    if FileManagement.DeleteServerFile(FileName) then;
+
+                    //Send the image file.
+                    if Rec."Vehicle Registration Card".HasValue then begin
+                        VehicleG.Copy(Rec);
+                        SendOCR.Send_VIN_OCR(VehicleG);
                         CurrPage.Update();
                     end;
                 end;
