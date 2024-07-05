@@ -55,6 +55,31 @@ pageextension 50010 OCRVehicleSearch extends "Cust Contact Vehicle Creation"
                     SetVehicleInfo(extTempVehicle);
                 end;
             }
+            action("OCR VINSearch")
+            {
+                ApplicationArea = All;
+                CaptionML = ENU = 'Take/Search a Photo of Veh.Reg.', KOR = '차대번호VIN 사진찍기/검색';
+                Image = AdministrationSalesPurchases;
+                Promoted = true;
+                PromotedCategory = Process;
+                PromotedIsBig = true;
+
+                trigger OnAction()
+                var
+                    IsSuccess: Boolean;
+                    extTempVehicle: Record Vehicle temporary;
+                    imageRec: Record Vehicle;
+                begin
+                    GetVehicleInfo(extTempVehicle);
+
+                    IsSuccess := Camera.AddPicture(extTempVehicle, extTempVehicle.FieldNo("Vehicle Registration Card"));
+                    if IsSuccess then begin
+                        SendOCR.Send_VIN_OCR(extTempVehicle);
+                        CurrPage.Update();
+                    end;
+                    SetVehicleInfo(extTempVehicle);
+                end;
+            }
             action("Import Veh.Reg.Card")
             {
                 ApplicationArea = All;
@@ -93,98 +118,50 @@ pageextension 50010 OCRVehicleSearch extends "Cust Contact Vehicle Creation"
                         SendOCR.Send_OCR(extTempVehicle);
                         CurrPage.Update();
                     end;
-                    Message('모델년도 %1 / 차량등록일 %2', extTempVehicle.Year, extTempVehicle."Registration Date");
                     SetVehicleInfo(extTempVehicle);
                 end;
             }
-            /*
-            action(ExportFile)
+            action("Import VIN")
             {
                 ApplicationArea = All;
-                CaptionML = ENU = 'Export Veh.Reg.Card', KOR = '차량등록증 내보내기';
-                Enabled = DeleteExportEnabled;
-                Image = Export;
-                ToolTip = 'Export the picture to a file.';
+                CaptionML = ENU = 'Import Veh.Reg Card Image', KOR = '차대번호VIN 업로드/검색';
+                Image = Import;
                 Promoted = true;
                 PromotedCategory = Process;
                 PromotedIsBig = true;
 
                 trigger OnAction()
                 var
-                    DummyPictureEntity: Record "Picture Entity";
                     FileManagement: Codeunit "File Management";
-                    ToFile: Text;
-                    ExportPath: Text;
-                    extTempVehicle: Record Vehicle temporary;
-                begin
-                    GetVehicleInfo(extTempVehicle);
-                    //extTempVehicle.TestField(extTempVehicle."Vehicle No.");
-
-                    ToFile := DummyPictureEntity.GetDefaultMediaDescription(extTempVehicle);
-                    ExportPath := TemporaryPath + extTempVehicle."Vehicle No." + Format(extTempVehicle."Vehicle Registration Card".MediaId);
-                    extTempVehicle."Vehicle Registration Card".ExportFile(ExportPath);
-
-                    FileManagement.ExportImage(ExportPath, ToFile);
-                end;
-            }
-            action(DeletePicture)
-            {
-                ApplicationArea = All;
-                CaptionML = ENU = 'Delete Veh.Reg.Card', KOR = '차량등록증 삭제';
-                Enabled = DeleteExportEnabled;
-                Image = Delete;
-                ToolTip = 'Delete the Veh.Reg.Card.';
-                Promoted = true;
-                PromotedCategory = Process;
-                PromotedIsBig = true;
-
-                trigger OnAction()
-                var
+                    FileName: Text;
+                    ClientFileName: Text;
                     extTempVehicle: Record Vehicle temporary;
                 begin
                     GetVehicleInfo(extTempVehicle);
 
-                    //extTempVehicle.TestField(extTempVehicle."Vehicle No.");
+                    if extTempVehicle."Vehicle Registration Card".HasValue then
+                        if not Confirm(OverrideImageQst) then
+                            exit;
 
-                    if not Confirm(DeleteImageQst) then
+                    FileName := FileManagement.UploadFile(SelectPictureTxt, ClientFileName);
+                    if FileName = '' then
                         exit;
 
                     Clear(extTempVehicle."Vehicle Registration Card");
-                    extTempVehicle.Modify(true);
+                    extTempVehicle."Vehicle Registration Card".ImportFile(FileName, ClientFileName);
+                    if not extTempVehicle.Modify(true) then
+                        extTempVehicle.Insert(true);
 
+                    if FileManagement.DeleteServerFile(FileName) then;
+
+                    //Send the image file.
+                    if extTempVehicle."Vehicle Registration Card".HasValue then begin
+                        SendOCR.Send_VIN_OCR(extTempVehicle);
+                        CurrPage.Update();
+                    end;
                     SetVehicleInfo(extTempVehicle);
                 end;
             }
-            */
-            /*
-            action(ShowPZ)
-            {
-                ApplicationArea = All;
-                CaptionML = ENU = 'View Spec Information', KOR = '파트존 결과정보 보기';
-                Promoted = true;
-                PromotedCategory = Process;
-                PromotedIsBig = true;
-                Image = ServicePriceAdjustment;
-
-                trigger OnAction()
-                var
-                    specPage: page "Vehicle Spec Inforamations";
-                    specInforRecL: Record "Vehicle Spec  Information";
-                    extTempVehicle: Record Vehicle temporary;
-                    specTypeL: Enum "Spec Type";
-                begin
-                    GetVehicleInfo(extTempVehicle);
-                    specInforRecL.Reset();
-                    specInforRecL.SetRange(VIN, extTempVehicle."Vehicle Identification No.");
-                    specInforRecL.SetFilter(SpecType, '%1|%2', specTypeL::Spec, specTypeL::Part);
-                    if specInforRecL.FindSet() then begin
-                        specPage.SetTableView(specInforRecL);
-                        specPage.Run();
-                    end;
-                end;
-            }
-            */
-
         }
 
     }

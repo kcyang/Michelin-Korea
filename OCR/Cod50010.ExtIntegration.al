@@ -414,7 +414,6 @@ codeunit 50010 "Ext Integration"
                                         end;
                                         vehicleL.Modify();
                                     end else begin
-                                        //if VehicleTempP.Get(VehicleNoP) then begin //find in the temp.
                                         VehicleTempP."Vehicle Identification No." := VINNoTextL;
                                         VehicleTempP."Vehicle Manufacturer" := VehicleP."Vehicle Manufacturer";
                                         VehicleTempP."Vehicle Model" := VehicleP."Vehicle Model";
@@ -423,7 +422,6 @@ codeunit 50010 "Ext Integration"
                                         VehicleTempP."Engine No. (Type)" := VehicleP."Engine No. (Type)";
                                         VehicleTempP.Fuel := VehicleP.Fuel;
                                         VehicleTempP.Modify();
-                                        //end;
                                     end;
                                 end;
                             end;
