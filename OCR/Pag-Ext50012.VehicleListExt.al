@@ -23,38 +23,6 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
     {
         addfirst(Catalog)
         {
-            // action(deleteTable)
-            // {
-            //     ApplicationArea = All;
-            //     Image = LineDescription;
-            //     Promoted = true;
-            //     PromotedCategory = Category6;
-            //     PromotedIsBig = true;
-            //     trigger OnAction()
-            //     var
-            //         spec: Record "Vehicle Spec  Information";
-            //     begin
-            //         spec.DeleteAll();
-            //     end;
-            // }
-            // action(runLog)
-            // {
-            //     ApplicationArea = All;
-            //     Image = LineDescription;
-            //     RunObject = page "OCR Log List";
-            //     Promoted = true;
-            //     PromotedCategory = Category6;
-            //     PromotedIsBig = true;
-            // }
-            // action(runProxy)
-            // {
-            //     ApplicationArea = All;
-            //     Image = LineDescription;
-            //     RunObject = codeunit ExtIntegrationDotNet;
-            //     Promoted = true;
-            //     PromotedCategory = Category6;
-            //     PromotedIsBig = true;
-            // }
             action(ConfirmVehicleReg)
             {
                 ApplicationArea = All;
@@ -107,7 +75,7 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
                     IsSuccess := Camera.AddPicture(Rec, Rec.FieldNo("Vehicle Registration Card"));
                     if IsSuccess then begin
                         VehicleG.Copy(Rec);
-                        SendOCR.Send_OCR(VehicleG);
+                        SendOCR.Send_VIN_OCR(VehicleG);
                     end;
                 end;
             }
@@ -172,7 +140,7 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
                         if not Confirm(OverrideImageQst) then
                             exit;
 
-                    FileName := FileManagement.UploadFile(SelectPictureTxt, ClientFileName);
+                    FileName := FileManagement.UploadFile(SelectVINPictureTxt, ClientFileName);
                     if FileName = '' then
                         exit;
 
@@ -194,7 +162,7 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
             action(ExportFile)
             {
                 ApplicationArea = All;
-                Caption = 'Export Veh.Reg.Card';
+                CaptionML = ENU = 'Export Veh.Reg.Card', KOR = '이미지(등록증/VIN) 내보내기';
                 Enabled = DeleteExportEnabled;
                 Image = Export;
                 ToolTip = 'Export the picture to a file.';
@@ -221,7 +189,7 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
             action(DeletePicture)
             {
                 ApplicationArea = All;
-                Caption = 'Delete Veh.Reg.Card';
+                CaptionML = ENU = 'Delete Veh.Reg.Card', KOR = '이미지(등록증/VIN) 삭제';
                 Enabled = DeleteExportEnabled;
                 Image = Delete;
                 ToolTip = 'Delete the Veh.Reg.Card.';
@@ -259,6 +227,8 @@ pageextension 50012 VehicleListExt extends "Vehicle List"
         OverrideImageQst: Label '이미 등록된 이미지가 교체됩니다. 그래도 계속하시겠습니까?';
         DeleteImageQst: Label '등록된 이미지를 정말 삭제하시겠습니까?';
         SelectPictureTxt: Label '차량등록증 이미지를 선택하세요.';
+        SelectVINPictureTxt: Label '차대번호 이미지를 선택하세요.';
+
         DeleteExportEnabled: Boolean;
         VehicleG: Record Vehicle temporary;
         SendOCR: Codeunit "Ext Integration";

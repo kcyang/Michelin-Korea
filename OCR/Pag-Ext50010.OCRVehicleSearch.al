@@ -143,7 +143,7 @@ pageextension 50010 OCRVehicleSearch extends "Cust Contact Vehicle Creation"
                         if not Confirm(OverrideImageQst) then
                             exit;
 
-                    FileName := FileManagement.UploadFile(SelectPictureTxt, ClientFileName);
+                    FileName := FileManagement.UploadFile(SelectVINPictureTxt, ClientFileName);
                     if FileName = '' then
                         exit;
 
@@ -185,6 +185,7 @@ pageextension 50010 OCRVehicleSearch extends "Cust Contact Vehicle Creation"
         OverrideImageQst: Label '이미 등록된 이미지가 교체됩니다. 그래도 계속하시겠습니까?';
         DeleteImageQst: Label '등록된 이미지를 정말 삭제하시겠습니까?';
         SelectPictureTxt: Label '차량등록증 이미지를 선택하세요.';
+        SelectVINPictureTxt: Label '차대번호 이미지를 선택하세요.';
         DeleteExportEnabled: Boolean;
         VehicleG: Record Vehicle temporary;
         SendOCR: Codeunit "Ext Integration";

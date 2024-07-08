@@ -40,7 +40,7 @@ pageextension 50011 VehicleCardExt extends "Vehicle Card Generic"
             action("OCR Search")
             {
                 ApplicationArea = All;
-                CaptionML = ENU = 'OCR Search', KOR = '차량등록증 등록/검색';
+                CaptionML = ENU = 'OCR Search', KOR = '차량등록증 사진찍기/검색';
                 Image = AdministrationSalesPurchases;
                 Promoted = true;
                 PromotedCategory = Category6;
@@ -61,7 +61,7 @@ pageextension 50011 VehicleCardExt extends "Vehicle Card Generic"
             action("OCR VINSearch")
             {
                 ApplicationArea = All;
-                CaptionML = ENU = 'OCR VIN Search', KOR = '차대번호VIN 등록/검색';
+                CaptionML = ENU = 'OCR VIN Search', KOR = '차대번호VIN 사진찍기/검색';
                 Image = AdministrationSalesPurchases;
                 Promoted = true;
                 PromotedCategory = Category6;
@@ -139,7 +139,7 @@ pageextension 50011 VehicleCardExt extends "Vehicle Card Generic"
                         if not Confirm(OverrideImageQst) then
                             exit;
 
-                    FileName := FileManagement.UploadFile(SelectPictureTxt, ClientFileName);
+                    FileName := FileManagement.UploadFile(SelectVINPictureTxt, ClientFileName);
                     if FileName = '' then
                         exit;
 
@@ -160,7 +160,7 @@ pageextension 50011 VehicleCardExt extends "Vehicle Card Generic"
             action(ExportFile)
             {
                 ApplicationArea = All;
-                CaptionML = ENU = 'Export Veh.Reg.Card', KOR = '차량등록증 내보내기';
+                CaptionML = ENU = 'Export Veh.Reg.Card', KOR = '이미지(등록증/VIN) 내보내기';
                 Enabled = DeleteExportEnabled;
                 Image = Export;
                 ToolTip = 'Export the picture to a file.';
@@ -187,7 +187,7 @@ pageextension 50011 VehicleCardExt extends "Vehicle Card Generic"
             action(DeletePicture)
             {
                 ApplicationArea = All;
-                CaptionML = ENU = 'Delete Veh.Reg.Card', KOR = '차량등록증 삭제';
+                CaptionML = ENU = 'Delete Veh.Reg.Card', KOR = '이미지(등록증/VIN) 삭제';
                 Enabled = DeleteExportEnabled;
                 Image = Delete;
                 ToolTip = 'Delete the Veh.Reg.Card.';
@@ -215,6 +215,7 @@ pageextension 50011 VehicleCardExt extends "Vehicle Card Generic"
         OverrideImageQst: Label '이미 등록된 이미지가 교체됩니다. 그래도 계속하시겠습니까?';
         DeleteImageQst: Label '등록된 이미지를 정말 삭제하시겠습니까?';
         SelectPictureTxt: Label '차량등록증 이미지를 선택하세요.';
+        SelectVINPictureTxt: Label '차대번호 이미지를 선택하세요.';
         DeleteExportEnabled: Boolean;
         VehicleG: Record Vehicle temporary;
         SendOCR: Codeunit "Ext Integration";
