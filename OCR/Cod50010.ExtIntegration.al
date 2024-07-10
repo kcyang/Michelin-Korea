@@ -921,8 +921,8 @@ codeunit 50010 "Ext Integration"
             //Check the Parts Detail URL.
             if ocrsetup."PZ_Parts_Invoke URL" = '' then
                 Error('PartZone Invoke URL is empty.');
-            if ocrsetup."Proxy URL" = '' then
-                Error('Proxy URL is missing.');
+            // if ocrsetup."Proxy URL" = '' then
+            //     Error('Proxy URL is missing.');
         end;
 
         jsonBody := '{"keycode" : "' + ocrsetup."PZ_Key Code" + '","vin" : "' + vehicleG."Vehicle Identification No." + '","service":"3","packageClass":"20"}';
