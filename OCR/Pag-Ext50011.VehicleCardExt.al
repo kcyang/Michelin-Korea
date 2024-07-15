@@ -53,8 +53,10 @@ pageextension 50011 VehicleCardExt extends "Vehicle Card Generic"
                     // Message('차량등록증 업로드/실행');
                     IsSuccess := Camera.AddPicture(Rec, Rec.FieldNo("Vehicle Registration Card"));
                     if IsSuccess then begin
-                        VehicleG.Copy(Rec);
-                        SendOCR.Send_OCR(VehicleG);
+                        if Rec."Vehicle Registration Card".HasValue then begin
+                            VehicleG.Copy(Rec);
+                            SendOCR.Send_OCR(VehicleG);
+                        end;
                     end;
                 end;
             }
@@ -74,8 +76,10 @@ pageextension 50011 VehicleCardExt extends "Vehicle Card Generic"
                     // Message('차량등록증 업로드/실행');
                     IsSuccess := Camera.AddPicture(Rec, Rec.FieldNo("Vehicle Registration Card"));
                     if IsSuccess then begin
-                        VehicleG.Copy(Rec);
-                        SendOCR.Send_VIN_OCR(VehicleG);
+                        if Rec."Vehicle Registration Card".HasValue then begin
+                            VehicleG.Copy(Rec);
+                            SendOCR.Send_VIN_OCR(VehicleG);
+                        end;
                     end;
                 end;
             }

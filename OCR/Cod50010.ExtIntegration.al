@@ -49,6 +49,7 @@ codeunit 50010 "Ext Integration"
         RegistListCnt: Integer;
         VehicleP: Record Vehicle temporary;
         VehicleL: Record Vehicle;
+        isNumber: Boolean;
 
         VehicleConfirmPage: Page "Cust Contact Vehicle Creation";
     begin
@@ -99,11 +100,16 @@ codeunit 50010 "Ext Integration"
                                         RegistDateList.Add('1');
                                     end;
                                 end;
-                                Evaluate(YearIdx, RegistDateList.Get(1));
-                                Evaluate(MontIdx, RegistDateList.Get(2));
-                                Evaluate(DayIdx, RegistDateList.Get(3));
+                                isNumber := Evaluate(YearIdx, RegistDateList.Get(1));
+                                isNumber := Evaluate(MontIdx, RegistDateList.Get(2));
+                                isNumber := Evaluate(DayIdx, RegistDateList.Get(3));
+
                                 //숫자로 변환한 내용을, 일자로 변환해줌.
-                                RegistDateDT := DMY2Date(DayIdx, MontIdx, YearIdx);
+                                if isNumber then begin
+                                    if (DayIdx > 0) and (DayIdx < 32) and (MontIdx > 0) and (MontIdx < 13) and (YearIdx > 1980) and (YearIdx < 9999) then
+                                        RegistDateDT := DMY2Date(DayIdx, MontIdx, YearIdx);
+                                end;
+
 
                             end;
 
@@ -286,7 +292,7 @@ codeunit 50010 "Ext Integration"
 
         VehicleConfirmPage: Page "Cust Contact Vehicle Creation";
     begin
-
+        // Message('%1', jsonText);
         if jsonText = '' then
             Error('There is no text parameter');
 
@@ -310,8 +316,34 @@ codeunit 50010 "Ext Integration"
                                         listFields.Add(DelChr(jsonToken_inferText.AsValue().AsText(), '='));
                                 end;
                             end;
+
                             indexofText := 0;
-                            //6차대번호 다음 1개
+                            indexofText := listFields.IndexOf('제작년도:');
+                            if indexofText = 0 then begin
+                                indexofText := listFields.IndexOf('제작연월:')
+                            end;
+                            if indexofText = 0 then begin
+                                indexofText := listFields.IndexOf('제작연월')
+                            end;
+                            if indexofText = 0 then begin
+                                indexofText := listFields.IndexOf('도:')
+                            end;
+                            if indexofText = 0 then begin
+                                indexofText := listFields.IndexOf('년도:')
+                            end;
+                            if indexofText = 0 then begin
+                                indexofText := listFields.IndexOf('월:')
+                            end;
+                            if indexofText = 0 then begin
+                                indexofText := listFields.IndexOf('연월:')
+                            end;
+                            if indexofText <> 0 then
+                                listFields.Get(indexofText + 1, RegistDate);
+
+                            RegistDateDT := ParseDateString(RegistDate);
+
+                            indexofText := 0;
+                            //차대번호 다음 1개
                             indexofText := listFields.IndexOf('차대번호:');
                             if indexofText = 0 then begin
                                 indexofText := listFields.IndexOf('호:')
@@ -330,6 +362,7 @@ codeunit 50010 "Ext Integration"
                             VehicleP.Insert();
                             if VehicleP.Get(VehicleNoP) then begin
                                 VehicleP."Vehicle Identification No." := VINNoTextL;
+                                VehicleP."Registration Date" := RegistDateDT;
                                 VehicleP.Modify();
                                 Commit();
                                 if Page.RunModal(50012, VehicleP) = Action::LookupOK then begin
@@ -416,6 +449,7 @@ codeunit 50010 "Ext Integration"
                                     end else begin
                                         VehicleTempP."Vehicle Identification No." := VINNoTextL;
                                         VehicleTempP."Vehicle Manufacturer" := VehicleP."Vehicle Manufacturer";
+                                        VehicleTempP."Registration Date" := RegistDateDT;
                                         VehicleTempP."Vehicle Model" := VehicleP."Vehicle Model";
                                         VehicleTempP."Vehicle Variant" := VehicleP."Vehicle Variant";
                                         VehicleTempP."Body Type" := VehicleP."Body Type";
@@ -993,6 +1027,43 @@ codeunit 50010 "Ext Integration"
             EXIT(specInforRecord.ID);
         end;
 
+    end;
+
+    local procedure ParseDateString(inputString: Text): Date
+    var
+        parts: List of [Text];
+        year, month, day : Integer;
+        today: Date;
+    begin
+        // 현재 날짜를 구합니다.
+        today := Today();
+
+        // Dot(.) 기준으로 문자열을 나눕니다.
+        parts := inputString.Split('.');
+
+        // 년도 설정
+        if parts.Count >= 1 then
+            Evaluate(year, parts.Get(1))
+        else
+            year := Date2DMY(today, 3); // 현재 연도
+
+        // 월 설정
+        if parts.Count >= 2 then
+            Evaluate(month, parts.Get(2))
+        else
+            month := Date2DMY(today, 2); // 현재 월
+
+        // 일 설정
+        if parts.Count >= 3 then
+            Evaluate(day, parts.Get(3))
+        else
+            day := Date2DMY(today, 1); // 현재 일
+
+        // 유효한 날짜인지 확인
+        if (year > 0) and (month > 0) and (month <= 12) and (day > 0) and (day <= 31) then
+            exit(DMY2Date(day, month, year))
+        else
+            Error('유효하지 않은 날짜입니다: %1', inputString);
     end;
 
 
